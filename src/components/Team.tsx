@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
-import { TeamData, Player as PlayerType } from '../App';
+import { TeamData } from '../App'; // Removed PlayerType import
+import { Pencil } from 'lucide-react'; // Import Pencil icon
+
 interface TeamProps {
   team: TeamData;
   gameActive: boolean;
@@ -49,8 +51,8 @@ export const Team: React.FC<TeamProps> = ({
             </div>
           </form> : <>
             <h2 className="text-xl font-bold">{team.name}</h2>
-            <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-gray-700 text-sm" disabled={gameActive}>
-              Edit
+            <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-gray-700 disabled:opacity-50" disabled={gameActive} title="Edit team name">
+              <Pencil size={18} />
             </button>
           </>}
       </div>

@@ -17,7 +17,7 @@ export const GameControls: React.FC<GameControlsProps> = ({
   disableStart
 }) => {
   return <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center sm:space-y-0 space-y-4">
         <div className="text-lg font-medium">
           Game Status:{' '}
           <span className={gameActive ? 'text-green-600' : 'text-gray-600'}>

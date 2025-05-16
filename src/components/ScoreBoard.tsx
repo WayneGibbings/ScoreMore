@@ -10,7 +10,6 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
 }) => {
   return <div className="bg-gray-800 text-white rounded-lg shadow-lg p-4 mb-6">
       <h2 className="text-center text-lg font-medium mb-3">
-        Scoreboard
         {isHalftime && <span className="ml-2 text-yellow-400">(Half Time)</span>}
       </h2>
       <div className="flex justify-center items-center">
