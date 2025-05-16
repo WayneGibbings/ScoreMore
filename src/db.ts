@@ -243,3 +243,22 @@ export async function loadScoringLogForGame(gameHistoryId: string): Promise<LogE
   stmt.free();
   return parseLogEntries(rows);
 }
+
+export async function deleteGameFromHistory(gameId: string): Promise<boolean> {
+  try {
+    const currentDb = await getDb();
+    
+    // First, delete associated scoring logs
+    currentDb.run('DELETE FROM score_log WHERE game_history_id = ?', [gameId]);
+    
+    // Then delete the game itself
+    currentDb.run('DELETE FROM game_history WHERE id = ?', [gameId]);
+    
+    // Save the DB changes
+    await saveDb(currentDb);
+    return true;
+  } catch (error) {
+    console.error("Error deleting game from history:", error);
+    return false;
+  }
+}

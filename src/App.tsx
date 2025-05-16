@@ -13,6 +13,7 @@ import {
   loadScoringLogForCurrentGame,
   associateScoreLogToGameHistory,
   clearUnassociatedScoreLog,
+  deleteGameFromHistory,
   type CurrentGameState // Import the interface
 } from './db';
 
@@ -277,6 +278,17 @@ export function App() {
     setGameStatus(newHalftimeState ? 'halftime' : 'in_progress');
   };
 
+  const handleDeleteGame = async (gameId: string) => {
+    const success = await deleteGameFromHistory(gameId);
+    if (success) {
+      // Update the game history state by removing the deleted game
+      setGameHistory(prev => prev.filter(game => game.id !== gameId));
+    } else {
+      console.error("Failed to delete game with ID:", gameId);
+      // Could add a toast notification here for error feedback
+    }
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center"><h1 className="text-3xl font-bold">Loading...</h1></div>;
   }
@@ -292,7 +304,7 @@ export function App() {
           {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
           <ScoringLog entries={scoringLog} />
         </div>
-        {gameHistory.length > 0 && <GameHistory history={gameHistory} />}
+        {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} />}
       </div>
     </div>;
 }
