@@ -66,7 +66,7 @@ export function App() {
   const [teams, setTeams] = useState<TeamData[]>([{
     id: '1',
     name: 'Honeyeaters',
-    color: 'black',
+    color: 'blue',
     players: [],
     totalScore: 0
   }, {

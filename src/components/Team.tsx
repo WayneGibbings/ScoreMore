@@ -3,6 +3,23 @@ import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
 import { Pencil } from 'lucide-react'; // Import Pencil icon
 
+// Helper function to get hex color codes
+const getColorHex = (color: string): string => {
+  const colorMap: Record<string, string> = {
+    'red': 'ef4444',
+    'blue': '3b82f6',
+    'green': '22c55e',
+    'yellow': 'eab308',
+    'purple': 'a855f7',
+    'pink': 'ec4899',
+    'orange': 'f97316',
+    'teal': '14b8a6',
+    'indigo': '6366f1',
+    'black': '1a1a1a' // Much darker gray, very close to black
+  };
+  return colorMap[color] || '3b82f6'; // Default to blue if color not found
+};
+
 interface TeamProps {
   team: TeamData;
   gameActive: boolean;
@@ -24,7 +41,7 @@ export const Team: React.FC<TeamProps> = ({
   const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
   
-  const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo'];
+  const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
 
   const handleAddPlayer = (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +57,7 @@ export const Team: React.FC<TeamProps> = ({
     setIsEditingName(false);
   };
 
-  return <div className={`bg-white rounded-lg shadow-md p-4 border-t-4 border-${team.color}-500`}>
+  return <div className="bg-white rounded-lg shadow-md p-4 border-t-4" style={{ borderTopColor: `var(--color-${team.color}-500, #${getColorHex(team.color)})` }}>
       <div className="flex justify-between items-center mb-4">
         {isEditingName ? <form onSubmit={handleTeamNameSubmit} className="flex-1">
             <input type="text" value={teamName} onChange={e => setTeamName(e.target.value)} className="border rounded px-2 py-1 w-full" autoFocus />
