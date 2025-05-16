@@ -4,15 +4,18 @@ ScoreMore is a web-based application for tracking scores in sports games. It all
 
 ## Features
 
-*   **Team Management:** Create and name up to two teams.
+*   **Team Management:** Create and name up to two teams with custom colors.
+*   **Team Colors:** Select from a variety of colors for teams, displayed in both the team panel and scoreboard.
 *   **Player Management:** Add players to each team.
 *   **Score Tracking:** Increment or decrement player scores.
 *   **Game State:** Start, end, and manage halftime for games.
 *   **Game Halves:** Tracks "First Half" and "Second Half" of a game.
 *   **Scoring Log:** View a detailed log of scoring events and halftime changes, with timestamps.
 *   **Game History:** View a history of completed games, including teams, scores, and winners.
+*   **Game Deletion:** Remove completed games from history with confirmation dialog to prevent accidental deletion.
 *   **Data Persistence:** Game state, history, and logs are saved to `localStorage` and reloaded on subsequent visits.
 *   **Date Formatting:** Dates are displayed in YYYY-MM-DD format, and timestamps include HH:MM:SS.
+*   **Visual Accessibility:** Special accommodations for dark team colors on the scoreboard with light backgrounds to ensure readability.
 
 ## Tech Stack
 
@@ -66,17 +69,54 @@ README.md               # This file
 *   **`src/App.tsx`:**
     *   Manages the main application state (teams, game status, history, logs).
     *   Contains functions for game logic (starting/ending games, adding players, updating scores, toggling halftime).
+    *   Handles team color management and updates in the state.
+    *   Implements the game deletion functionality.
     *   Uses `useEffect` hooks to load data from and save data to the database via `src/db.ts`.
     *   Handles date and time formatting for display.
+
+*   **`src/components/Team.tsx`:**
+    *   Provides UI for managing team names and colors through a dropdown selection.
+    *   Renders players and score controls.
+    *   Uses color mapping to ensure visual consistency.
+
+*   **`src/components/ScoreBoard.tsx`:**
+    *   Displays team names, colors, and scores.
+    *   Implements special handling for dark colors with light backgrounds to ensure readability.
+    *   Shows game status including halftime indication.
+
+*   **`src/components/GameHistory.tsx`:**
+    *   Displays completed games with expandable details.
+    *   Provides delete functionality with confirmation dialog for removing games from history.
 
 *   **`src/db.ts`:**
     *   Initializes the `sql.js` database and loads the `sql-wasm.wasm` file.
     *   Defines the database schema (`current_game_state`, `game_history`, `score_log`).
     *   Provides functions to save and load game state, game history, and scoring logs.
+    *   Implements functions for deleting games and their associated scoring logs.
     *   Persists the database to `localStorage` after changes.
 
 *   **`public/sql-wasm.wasm`:**
     *   The WebAssembly binary for `sql.js`. This file must be present in the `public` directory to be served correctly by Vite and loaded by `sql.js`.
+
+## Feature Details
+
+### Team Colors
+
+*   Teams can be assigned one of several predefined colors: red, blue, green, yellow, purple, pink, orange, teal, indigo, or black.
+*   When editing a team, a dropdown menu allows color selection.
+*   Team colors are displayed in several places:
+    *   As a colored border on the team panel
+    *   As colored text for the team's score in the scoreboard
+*   For dark colors like black, purple, or indigo, the scoreboard automatically adds a light semi-transparent background to ensure the score remains visible against the dark scoreboard background.
+*   Color selection is retained in game history for reference.
+
+### Game History & Deletion
+
+*   Completed games are stored in the game history section with date, teams, scores, and winner.
+*   Each game has an expandable section showing detailed player scores.
+*   A trash icon button allows deletion of individual games from history.
+*   Clicking the delete button triggers a confirmation dialog to prevent accidental deletions.
+*   When a game is deleted, all associated scoring logs are also removed from the database.
 
 ## Notes on Data Persistence
 
@@ -85,6 +125,7 @@ README.md               # This file
 *   On application load, it attempts to retrieve this data from `localStorage` and reinitialize the database.
 *   If `localStorage` data is corrupted or missing, a new empty database is created.
 *   Schema changes (like renaming `current_inning` to `current_half`) might require clearing `localStorage` for the site if old data causes issues, as no automatic migration logic is currently implemented for schema updates.
+*   Deleting games permanently removes them from the database - this action cannot be undone.
 
 ## Available Scripts
 
