@@ -41,6 +41,26 @@ export type LogEntry = {
   points: number;
   type: 'score' | 'halftime';
 };
+
+// Helper function to format dates as YYYY-MM-DD
+const formatDateYYYYMMDD = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+// Helper function to format dates and times as YYYY-MM-DD HH:MM:SS
+const formatDateTimeYYYYMMDDHHMMSS = (date: Date) => {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
 export function App() {
   const [teams, setTeams] = useState<TeamData[]>([{
     id: '1',
@@ -57,7 +77,7 @@ export function App() {
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
   const [isHalftime, setIsHalftime] = useState(false);
   const [scoringLog, setScoringLog] = useState<LogEntry[]>([]);
-  const [currentInning, setCurrentInning] = useState(1); // Added for db state
+  const [currentHalf, setCurrentHalf] = useState(1); // Renamed from currentInning
   const [gameStatus, setGameStatus] = useState('initial'); // Added for db state
   const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
 
@@ -69,7 +89,7 @@ export function App() {
         setTeams(savedGameState.teams);
         setGameActive(savedGameState.gameActive);
         setIsHalftime(savedGameState.isHalftime);
-        setCurrentInning(savedGameState.currentInning || 1);
+        setCurrentHalf(savedGameState.currentHalf || 1); // Renamed from currentInning
         setGameStatus(savedGameState.gameStatus || 'initial');
       } else {
         // If no saved game state, ensure default teams are part of what we might save initially.
@@ -78,7 +98,7 @@ export function App() {
           teams: teams, // Use initial teams from useState
           gameActive: false,
           isHalftime: false,
-          currentInning: 1,
+          currentHalf: 1, // Renamed from currentInning
           gameStatus: 'initial',
         };
         await saveCurrentGameState(initialGameState);
@@ -102,11 +122,11 @@ export function App() {
       teams,
       gameActive,
       isHalftime,
-      currentInning,
+      currentHalf, // Renamed from currentInning
       gameStatus
     };
     saveCurrentGameState(gameState);
-  }, [teams, gameActive, isHalftime, currentInning, gameStatus, isLoading]);
+  }, [teams, gameActive, isHalftime, currentHalf, gameStatus, isLoading]); // Renamed from currentInning
 
   // Update team total score whenever player scores change
   useEffect(() => {
@@ -133,7 +153,7 @@ export function App() {
     setTeams(resetTeams);
     setGameActive(true);
     setIsHalftime(false);
-    setCurrentInning(1);
+    setCurrentHalf(1); // Renamed from setCurrentInning
     setGameStatus('in_progress');
     await clearUnassociatedScoreLog(); // Clear logs from any previous unfinished game
     setScoringLog([]); // Clear UI log
@@ -143,7 +163,7 @@ export function App() {
     const winner = teams[0].totalScore > teams[1].totalScore ? teams[0].name : teams[0].totalScore < teams[1].totalScore ? teams[1].name : 'Tie';
     const gameResult: GameResult = {
       id: Date.now().toString(),
-      date: new Date().toLocaleString(),
+      date: formatDateYYYYMMDD(new Date()), // Changed to YYYY-MM-DD
       teams: JSON.parse(JSON.stringify(teams)), // Deep copy
       winner
     };
@@ -185,7 +205,7 @@ export function App() {
     if (team && player) {
       const logEntry: LogEntry = {
         id: Date.now().toString(),
-        timestamp: new Date().toLocaleTimeString(),
+        timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()), // Changed to include time
         teamName: team.name,
         playerName: player.name,
         points,
@@ -242,7 +262,7 @@ export function App() {
     setIsHalftime(newHalftimeState);
     const logEntry: LogEntry = {
       id: Date.now().toString(),
-      timestamp: new Date().toLocaleTimeString(),
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()), // Changed to include time
       teamName: '',
       playerName: '',
       points: 0,
@@ -260,7 +280,7 @@ export function App() {
   return <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-center mb-6">
-          {gameActive ? (isHalftime ? 'Halftime' : `Inning ${currentInning}`) : 'Scoreboard'}
+          {gameActive ? (isHalftime ? 'Halftime' : currentHalf === 1 ? 'First Half' : 'Second Half') : 'Scoreboard'}
         </h1>
         <ScoreBoard teams={teams} isHalftime={isHalftime} />
         <GameControls gameActive={gameActive} startGame={startGame} endGame={endGame} isHalftime={isHalftime} onHalftime={toggleHalftime} disableStart={teams.some(team => team.players.length === 0)} />

@@ -42,7 +42,7 @@ async function initializeDatabaseSchema(currentDb: Database) {
       teams_json TEXT,
       game_active INTEGER,
       is_halftime INTEGER,
-      current_inning INTEGER,
+      current_half INTEGER, -- Renamed from current_inning
       game_status TEXT,
       timestamp DATETIME DEFAULT (datetime('now', 'localtime'))
     );
@@ -79,21 +79,21 @@ export interface CurrentGameState {
   teams: TeamData[];
   gameActive: boolean;
   isHalftime: boolean;
-  currentInning: number;
+  currentHalf: number; // Renamed from currentInning
   gameStatus: string;
 }
 
 export async function saveCurrentGameState(state: CurrentGameState) {
   const currentDb = await getDb();
-  const { teams, gameActive, isHalftime, currentInning, gameStatus } = state;
+  const { teams, gameActive, isHalftime, currentHalf, gameStatus } = state; // Renamed from currentInning
   currentDb.run(
-    `INSERT OR REPLACE INTO current_game_state (id, teams_json, game_active, is_halftime, current_inning, game_status, timestamp)
-     VALUES (1, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`,
+    `INSERT OR REPLACE INTO current_game_state (id, teams_json, game_active, is_halftime, current_half, game_status, timestamp)
+     VALUES (1, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`, // Renamed from current_inning
     [
       JSON.stringify(teams),
       gameActive ? 1 : 0,
       isHalftime ? 1 : 0,
-      currentInning,
+      currentHalf, // Renamed from currentInning
       gameStatus
     ]
   );
@@ -125,7 +125,7 @@ export async function loadCurrentGameState(): Promise<CurrentGameState | null> {
       teams: parsedTeams,
       gameActive: !!row.game_active,
       isHalftime: !!row.is_halftime,
-      currentInning: (row.current_inning as number) === null || (row.current_inning as number) === undefined ? 1 : (row.current_inning as number),
+      currentHalf: (row.current_half as number) === null || (row.current_half as number) === undefined ? 1 : (row.current_half as number), // Renamed from current_inning
       gameStatus: (row.game_status as string) || 'initial',
     };
   }
