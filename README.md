@@ -92,3 +92,27 @@ README.md               # This file
 *   `npm run build`: Builds the application for production.
 *   `npm run lint`: Lints the codebase using ESLint.
 *   `npm run preview`: Serves the production build locally for preview.
+
+## Docker Support
+
+This application can be built and run using Docker.
+
+1.  **Build the Docker Image:**
+    Open your terminal in the project root directory and run:
+    ```powershell
+    docker build -t scoremore-app .
+    ```
+
+2.  **Run the Docker Container:**
+    After building the image, run the container:
+    ```powershell
+    docker run -p 8080:80 scoremore-app
+    ```
+    The application will be accessible at `http://localhost:8080` in your web browser.
+
+**Dockerfile details:**
+*   Uses a multi-stage build.
+*   Stage 1: Builds the React application using `node:20-alpine`.
+*   Stage 2: Serves the static build output from Stage 1 using `nginx:stable-alpine`.
+*   An `nginx.conf` file is included to ensure proper serving of the single-page application (SPA) by routing all paths to `index.html`.
+*   A `.dockerignore` file is used to minimize the build context sent to the Docker daemon.
