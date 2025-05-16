@@ -9,7 +9,7 @@ interface TeamProps {
   onAddPlayer: (name: string) => void;
   onUpdateScore: (playerId: string, points: number) => void;
   onRemovePlayer: (playerId: string) => void;
-  onUpdateTeamName: (name: string) => void;
+  onUpdateTeamName: (name: string, color: string) => void;
 }
 export const Team: React.FC<TeamProps> = ({
   team,
@@ -22,6 +22,10 @@ export const Team: React.FC<TeamProps> = ({
   const [newPlayerName, setNewPlayerName] = useState('');
   const [isEditingName, setIsEditingName] = useState(false);
   const [teamName, setTeamName] = useState(team.name);
+  const [teamColor, setTeamColor] = useState(team.color);
+  
+  const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo'];
+
   const handleAddPlayer = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPlayerName.trim()) {
@@ -29,12 +33,14 @@ export const Team: React.FC<TeamProps> = ({
       setNewPlayerName('');
     }
   };
+  
   const handleTeamNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateTeamName(teamName);
+    onUpdateTeamName(teamName, teamColor);
     setIsEditingName(false);
   };
-  return <div className={`bg-white rounded-lg shadow-md p-4 border-t-4 ${team.id === '1' ? 'border-blue-500' : 'border-red-500'}`}>
+
+  return <div className={`bg-white rounded-lg shadow-md p-4 border-t-4 border-${team.color}-500`}>
       <div className="flex justify-between items-center mb-4">
         {isEditingName ? <form onSubmit={handleTeamNameSubmit} className="flex-1">
             <input type="text" value={teamName} onChange={e => setTeamName(e.target.value)} className="border rounded px-2 py-1 w-full" autoFocus />
@@ -44,10 +50,19 @@ export const Team: React.FC<TeamProps> = ({
               </button>
               <button type="button" onClick={() => {
             setTeamName(team.name);
+            setTeamColor(team.color);
             setIsEditingName(false);
           }} className="bg-gray-500 text-white px-2 py-1 rounded text-sm">
                 Cancel
               </button>
+            </div>
+            <div className="mt-2">
+              <label className="block text-sm font-medium text-gray-700">Select Team Color</label>
+              <select value={teamColor} onChange={e => setTeamColor(e.target.value)} className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                {colorOptions.map(color => <option key={color} value={color}>
+                    {color}
+                  </option>)}
+              </select>
             </div>
           </form> : <>
             <h2 className="text-xl font-bold">{team.name}</h2>

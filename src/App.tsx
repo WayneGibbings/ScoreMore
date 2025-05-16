@@ -24,6 +24,7 @@ export type Player = {
 export type TeamData = {
   id: string;
   name: string;
+  color: string; // New property for team color
   players: Player[];
   totalScore: number;
 };
@@ -64,12 +65,14 @@ const formatDateTimeYYYYMMDDHHMMSS = (date: Date) => {
 export function App() {
   const [teams, setTeams] = useState<TeamData[]>([{
     id: '1',
-    name: 'Team A',
+    name: 'Honeyeaters',
+    color: 'blue',
     players: [],
     totalScore: 0
   }, {
     id: '2',
     name: 'Team B',
+    color: 'red',
     players: [],
     totalScore: 0
   }]);
@@ -245,12 +248,13 @@ export function App() {
     }));
   };
 
-  const updateTeamName = (teamId: string, newName: string) => {
+  const updateTeamName = (teamId: string, newName: string, newColor: string) => {
     setTeams(teams.map(team => {
       if (team.id === teamId) {
         return {
           ...team,
-          name: newName || team.name
+          name: newName || team.name,
+          color: newColor || team.color
         };
       }
       return team;
@@ -285,7 +289,7 @@ export function App() {
         <ScoreBoard teams={teams} isHalftime={isHalftime} />
         <GameControls gameActive={gameActive} startGame={startGame} endGame={endGame} isHalftime={isHalftime} onHalftime={toggleHalftime} disableStart={teams.some(team => team.players.length === 0)} />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={name => updateTeamName(team.id, name)} />)}
+          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
           <ScoringLog entries={scoringLog} />
         </div>
         {gameHistory.length > 0 && <GameHistory history={gameHistory} />}

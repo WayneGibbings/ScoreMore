@@ -15,12 +15,12 @@ export const ScoreBoard: React.FC<ScoreBoardProps> = ({
       <div className="flex justify-center items-center">
         <div className="flex-1 text-center">
           <div className="text-lg font-bold">{teams[0].name}</div>
-          <div className="text-4xl font-bold">{teams[0].totalScore}</div>
+          <div className={`text-4xl font-bold text-${teams[0].color}-400`}>{teams[0].totalScore}</div>
         </div>
         <div className="text-3xl font-bold px-4">:</div>
         <div className="flex-1 text-center">
           <div className="text-lg font-bold">{teams[1].name}</div>
-          <div className="text-4xl font-bold">{teams[1].totalScore}</div>
+          <div className={`text-4xl font-bold text-${teams[1].color}-400`}>{teams[1].totalScore}</div>
         </div>
       </div>
     </div>;
