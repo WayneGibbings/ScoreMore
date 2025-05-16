@@ -1,0 +1,274 @@
+import { useEffect, useState } from 'react';
+import { Team } from './components/Team';
+import { GameControls } from './components/GameControls';
+import { ScoreBoard } from './components/ScoreBoard';
+import { GameHistory } from './components/GameHistory';
+import { ScoringLog } from './components/ScoringLog';
+import {
+  loadCurrentGameState,
+  saveCurrentGameState,
+  loadGameHistory,
+  saveCompletedGame,
+  addLogEntryToDb,
+  loadScoringLogForCurrentGame,
+  associateScoreLogToGameHistory,
+  clearUnassociatedScoreLog,
+  type CurrentGameState // Import the interface
+} from './db';
+
+export type Player = {
+  id: string;
+  name: string;
+  score: number;
+};
+export type TeamData = {
+  id: string;
+  name: string;
+  players: Player[];
+  totalScore: number;
+};
+export type GameResult = {
+  id: string;
+  date: string;
+  teams: TeamData[];
+  winner: string;
+};
+export type LogEntry = {
+  id: string;
+  timestamp: string;
+  teamName: string;
+  playerName: string;
+  points: number;
+  type: 'score' | 'halftime';
+};
+export function App() {
+  const [teams, setTeams] = useState<TeamData[]>([{
+    id: '1',
+    name: 'Team A',
+    players: [],
+    totalScore: 0
+  }, {
+    id: '2',
+    name: 'Team B',
+    players: [],
+    totalScore: 0
+  }]);
+  const [gameActive, setGameActive] = useState(false);
+  const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
+  const [isHalftime, setIsHalftime] = useState(false);
+  const [scoringLog, setScoringLog] = useState<LogEntry[]>([]);
+  const [currentInning, setCurrentInning] = useState(1); // Added for db state
+  const [gameStatus, setGameStatus] = useState('initial'); // Added for db state
+  const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
+
+  // Load initial state from DB
+  useEffect(() => {
+    async function loadState() {
+      const savedGameState = await loadCurrentGameState();
+      if (savedGameState) {
+        setTeams(savedGameState.teams);
+        setGameActive(savedGameState.gameActive);
+        setIsHalftime(savedGameState.isHalftime);
+        setCurrentInning(savedGameState.currentInning || 1);
+        setGameStatus(savedGameState.gameStatus || 'initial');
+      } else {
+        // If no saved game state, ensure default teams are part of what we might save initially.
+        // This helps if saveCurrentGameState is called before any user interaction.
+        const initialGameState: CurrentGameState = {
+          teams: teams, // Use initial teams from useState
+          gameActive: false,
+          isHalftime: false,
+          currentInning: 1,
+          gameStatus: 'initial',
+        };
+        await saveCurrentGameState(initialGameState);
+      }
+
+      const history = await loadGameHistory();
+      setGameHistory(history);
+
+      const currentLog = await loadScoringLogForCurrentGame();
+      setScoringLog(currentLog);
+      setIsLoading(false);
+    }
+    loadState();
+  }, []); // Empty dependency array means this runs once on mount
+
+  // Save game state to DB whenever it changes
+  useEffect(() => {
+    if (isLoading) return; // Don't save while initially loading
+
+    const gameState: CurrentGameState = {
+      teams,
+      gameActive,
+      isHalftime,
+      currentInning,
+      gameStatus
+    };
+    saveCurrentGameState(gameState);
+  }, [teams, gameActive, isHalftime, currentInning, gameStatus, isLoading]);
+
+  // Update team total score whenever player scores change
+  useEffect(() => {
+    const updatedTeams = teams.map(team => {
+      const totalScore = team.players.reduce((sum, player) => sum + player.score, 0);
+      return {
+        ...team,
+        totalScore
+      };
+    });
+    setTeams(updatedTeams);
+  }, [teams.map(team => team.players.map(player => player.score).join(',')).join(',')]);
+
+  const startGame = async () => {
+    // Reset scores but keep players
+    const resetTeams = teams.map(team => ({
+      ...team,
+      players: team.players.map(player => ({
+        ...player,
+        score: 0
+      })),
+      totalScore: 0
+    }));
+    setTeams(resetTeams);
+    setGameActive(true);
+    setIsHalftime(false);
+    setCurrentInning(1);
+    setGameStatus('in_progress');
+    await clearUnassociatedScoreLog(); // Clear logs from any previous unfinished game
+    setScoringLog([]); // Clear UI log
+  };
+
+  const endGame = async () => {
+    const winner = teams[0].totalScore > teams[1].totalScore ? teams[0].name : teams[0].totalScore < teams[1].totalScore ? teams[1].name : 'Tie';
+    const gameResult: GameResult = {
+      id: Date.now().toString(),
+      date: new Date().toLocaleString(),
+      teams: JSON.parse(JSON.stringify(teams)), // Deep copy
+      winner
+    };
+    await saveCompletedGame(gameResult);
+    const logIdsToAssociate = scoringLog.map(log => log.id);
+    if (logIdsToAssociate.length > 0) {
+      await associateScoreLogToGameHistory(logIdsToAssociate, gameResult.id);
+    }
+    setGameHistory([gameResult, ...gameHistory]);
+    setGameActive(false);
+    setGameStatus('final');
+    // scoringLog for the completed game is now associated, new game will start fresh or load unassociated logs
+  };
+
+  const addPlayer = (teamId: string, playerName: string) => {
+    if (!playerName.trim()) return;
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          players: [...team.players, {
+            id: Date.now().toString(),
+            name: playerName,
+            score: 0
+          }]
+        };
+      }
+      return team;
+    }));
+  };
+
+  const updatePlayerScore = async (teamId: string, playerId: string, points: number) => {
+    if (isHalftime) {
+      console.log("Cannot update score during halftime.");
+      return;
+    }
+    const team = teams.find(t => t.id === teamId);
+    const player = team?.players.find(p => p.id === playerId);
+    if (team && player) {
+      const logEntry: LogEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toLocaleTimeString(),
+        teamName: team.name,
+        playerName: player.name,
+        points,
+        type: 'score'
+      };
+      await addLogEntryToDb(logEntry);
+      setScoringLog(prevLog => [logEntry, ...prevLog]);
+    }
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          players: team.players.map(player => {
+            if (player.id === playerId) {
+              return {
+                ...player,
+                score: Math.max(0, player.score + points)
+              };
+            }
+            return player;
+          })
+        };
+      }
+      return team;
+    }));
+  };
+
+  const removePlayer = (teamId: string, playerId: string) => {
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          players: team.players.filter(player => player.id !== playerId)
+        };
+      }
+      return team;
+    }));
+  };
+
+  const updateTeamName = (teamId: string, newName: string) => {
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          name: newName || team.name
+        };
+      }
+      return team;
+    }));
+  };
+
+  const toggleHalftime = async () => {
+    const newHalftimeState = !isHalftime;
+    setIsHalftime(newHalftimeState);
+    const logEntry: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleTimeString(),
+      teamName: '',
+      playerName: '',
+      points: 0,
+      type: 'halftime'
+    };
+    await addLogEntryToDb(logEntry);
+    setScoringLog(prevLog => [logEntry, ...prevLog]);
+    setGameStatus(newHalftimeState ? 'halftime' : 'in_progress');
+  };
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center"><h1 className="text-3xl font-bold">Loading...</h1></div>;
+  }
+
+  return <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          {gameActive ? (isHalftime ? 'Halftime' : `Inning ${currentInning}`) : 'Scoreboard'}
+        </h1>
+        <ScoreBoard teams={teams} isHalftime={isHalftime} />
+        <GameControls gameActive={gameActive} startGame={startGame} endGame={endGame} isHalftime={isHalftime} onHalftime={toggleHalftime} disableStart={teams.some(team => team.players.length === 0)} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={name => updateTeamName(team.id, name)} />)}
+          <ScoringLog entries={scoringLog} />
+        </div>
+        {gameHistory.length > 0 && <GameHistory history={gameHistory} />}
+      </div>
+    </div>;
+}
