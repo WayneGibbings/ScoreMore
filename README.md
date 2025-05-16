@@ -116,3 +116,37 @@ This application can be built and run using Docker.
 *   Stage 2: Serves the static build output from Stage 1 using `nginx:stable-alpine`.
 *   An `nginx.conf` file is included to ensure proper serving of the single-page application (SPA) by routing all paths to `index.html`.
 *   A `.dockerignore` file is used to minimize the build context sent to the Docker daemon.
+
+## Running with Docker Compose
+
+Alternatively, you can use Docker Compose to manage and run the application container. Create a `docker-compose.yml` file in the root of your project with the following content:
+
+```yaml
+version: '3.8'
+
+services:
+  scoremore-app:
+    # IMPORTANT: Replace YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME with your actual GitHub username and repository name.
+    image: ghcr.io/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME:latest
+    ports:
+      - "8080:80"  # Maps port 8080 on your host to port 80 in the container
+    restart: unless-stopped
+    container_name: scoremore_app_instance
+```
+
+**Instructions:**
+
+1.  **Save the file:** Create the `docker-compose.yml` file as shown above in your project root.
+2.  **Update the image name:** Modify the `image` line to point to your actual image in GHCR (e.g., `ghcr.io/yourusername/scoremore:latest`).
+3.  **Run with Docker Compose:**
+    Open your terminal in the project root directory and run:
+    ```powershell
+    docker-compose up -d
+    ```
+    The `-d` flag runs the container in detached mode (in the background).
+4.  **Access the application:** The application will be accessible at `http://localhost:8080` in your web browser.
+
+To stop the application, run:
+```powershell
+docker-compose down
+```
