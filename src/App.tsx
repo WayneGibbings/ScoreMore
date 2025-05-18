@@ -4,7 +4,8 @@ import { GameControls } from './components/GameControls';
 import { ScoreBoard } from './components/ScoreBoard';
 import { GameHistory } from './components/GameHistory';
 import { ScoringLog } from './components/ScoringLog';
-import { Mail } from 'lucide-react'; // Import Mail icon for feedback button
+import { InfoPage } from './components/InfoPage';
+import { Mail, Info } from 'lucide-react'; // Import Mail and Info icons
 import {
   loadCurrentGameState,
   saveCurrentGameState,
@@ -86,6 +87,7 @@ export function App() {
   const [currentHalf, setCurrentHalf] = useState(1); // Renamed from currentInning
   const [gameStatus, setGameStatus] = useState('initial'); // Added for db state
   const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
+  const [isInfoPageOpen, setIsInfoPageOpen] = useState(false); // State for info page modal
 
   // Load initial state from DB
   useEffect(() => {
@@ -345,7 +347,20 @@ export function App() {
   }
 
   return <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-4xl mx-auto">
+      {/* Info Page Modal - only rendered when open */}
+      <InfoPage isOpen={isInfoPageOpen} onClose={() => setIsInfoPageOpen(false)} />
+      
+      <div className="max-w-4xl mx-auto relative">
+        {/* Info Button in top right */}
+        <button 
+          onClick={() => setIsInfoPageOpen(true)}
+          className="absolute right-0 top-0 p-2 text-blue-600 hover:text-blue-800 focus:outline-none rounded-full bg-white shadow-sm hover:bg-blue-50"
+          title="How to use ScoreMore"
+          aria-label="Information about how to use ScoreMore"
+        >
+          <Info size={24} />
+        </button>
+        
         <h1 className="text-3xl font-bold text-center mb-6">
           {gameActive ? (isHalftime ? 'Halftime' : currentHalf === 1 ? 'First Half' : 'Second Half') : 'Scoreboard'}
         </h1>
@@ -374,5 +389,6 @@ export function App() {
         </div>
         <p className="mt-2">© 2025 Wayne Gibbings. All rights reserved.</p>
       </footer>
+      {/* InfoPage component is already added above, removing duplicate */}
     </div>;
 }
