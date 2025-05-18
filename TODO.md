@@ -7,7 +7,9 @@ This document outlines planned enhancements and feature additions for the ScoreM
 ### Requested features
 - [x] Add Edit feature for completed games - allow editing the team names
 - [x] Change Completed Game summary to not show "0 goals" if a player didn't score but just their name. Also sort the player list.
-- [ ] Add a "copy to clipboard" button on the finished game results. This should copy the team names and scores, and the list of players and goals scored to the clipboard. This will be used to update the team chat and elsewhere
+- [x] Add a "copy to clipboard" button on the finished game results. This should copy the team names and scores, and the list of players and goals scored to the clipboard. This will be used to update the team chat and email and elsewhere
+- [ ] Add feedback button that emails wayne+scoremore@gibbings.net
+- [ ] Add a footer to the app with some details like build date/time.
 
 ### Remote Data Storage
 - [ ] Implement Firebase/Firestore integration for cloud-based data storage

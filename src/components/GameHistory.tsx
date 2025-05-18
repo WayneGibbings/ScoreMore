@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GameResult } from '../App';
-import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil, ClipboardCopyIcon } from 'lucide-react';
 
 interface GameHistoryProps {
   history: GameResult[];
@@ -18,6 +18,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [editedTeamNames, setEditedTeamNames] = useState<{ [teamId: string]: string }>({});
   const [editedTeamColors, setEditedTeamColors] = useState<{ [teamId: string]: string }>({});
+  const [toast, setToast] = useState<{message: string; visible: boolean}>({message: '', visible: false});
   
   // Predefined color options for consistent team colors
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
@@ -99,6 +100,90 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
     setEditingGameId(null);
   };
   
+  // Format date as "Saturday 5th May 2025"
+  const formatDateForSummary = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    
+    // Day of the week
+    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayOfWeek = dayNames[date.getDay()];
+    
+    // Day of month with suffix (1st, 2nd, 3rd, etc)
+    const day = date.getDate();
+    let daySuffix = "th";
+    if (day % 10 === 1 && day !== 11) daySuffix = "st";
+    else if (day % 10 === 2 && day !== 12) daySuffix = "nd";
+    else if (day % 10 === 3 && day !== 13) daySuffix = "rd";
+    
+    // Month name
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", 
+                        "August", "September", "October", "November", "December"];
+    const month = monthNames[date.getMonth()];
+    
+    // Year
+    const year = date.getFullYear();
+    
+    return `${dayOfWeek} ${day}${daySuffix} ${month} ${year}`;
+  };
+
+  const copyGameToClipboard = (e: React.MouseEvent, game: GameResult) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick
+    
+    // Format the game summary for clipboard
+    let summary = `Game Summary (${formatDateForSummary(game.date)})\n`;
+    summary += `${game.teams[0].name} ${game.teams[0].totalScore} - ${game.teams[1].totalScore} ${game.teams[1].name}\n\n`;
+    
+    // Add team summaries
+    game.teams.forEach(team => {
+      summary += `${team.name} Players:\n`;
+      
+      // Make sure we have players to show
+      if (team.players && team.players.length > 0) {
+        // Sort all players alphabetically
+        [...team.players]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .forEach(player => {
+            if (player.score > 0) {
+              summary += `- ${player.name}: ${player.score} ${player.score === 1 ? 'goal' : 'goals'}\n`;
+            } else {
+              summary += `- ${player.name}\n`;
+            }
+          });
+      } else {
+        summary += `- No players\n`;
+      }
+      
+      summary += '\n';
+    });
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(summary)
+      .then(() => {
+        // Show toast notification
+        setToast({
+          message: 'Game summary copied to clipboard!', 
+          visible: true
+        });
+        
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+          setToast({message: '', visible: false});
+        }, 3000);
+      })
+      .catch(err => {
+        console.error('Could not copy text: ', err);
+        setToast({
+          message: 'Failed to copy to clipboard', 
+          visible: true
+        });
+        
+        // Hide toast after 3 seconds
+        setTimeout(() => {
+          setToast({message: '', visible: false});
+        }, 3000);
+      });
+  };
+  
   return <div className="mt-8">
       <h2 className="text-xl font-bold mb-4">Game History</h2>
       <div className="bg-white rounded-lg shadow-md divide-y">
@@ -115,6 +200,13 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
                 <div className={`mr-4 font-medium ${game.winner === 'Tie' ? 'text-gray-600' : 'text-green-600'}`}>
                   {game.winner === 'Tie' ? 'Tie' : `Winner: ${game.winner}`}
                 </div>
+                <button 
+                  onClick={(e) => copyGameToClipboard(e, game)}
+                  className="mr-2 text-gray-400 hover:text-blue-500 focus:outline-none"
+                  title="Copy game summary to clipboard"
+                >
+                  <ClipboardCopyIcon size={18} />
+                </button>
                 {onEditGame && (
                   <button 
                     onClick={(e) => startEditing(e, game)}
@@ -239,6 +331,14 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
               </button>
             </div>
           </div>
+        </div>
+      )}
+      
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg z-50 flex items-center">
+          <ClipboardCopyIcon size={18} className="mr-2" />
+          {toast.message}
         </div>
       )}
     </div>;
