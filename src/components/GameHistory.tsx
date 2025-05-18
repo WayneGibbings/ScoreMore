@@ -137,7 +137,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
     
     // Add team summaries
     game.teams.forEach(team => {
-      summary += `${team.name} Players:\n`;
+      summary += `${team.name}:\n`;
       
       // Make sure we have players to show
       if (team.players && team.players.length > 0) {

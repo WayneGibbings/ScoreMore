@@ -4,6 +4,7 @@ import { GameControls } from './components/GameControls';
 import { ScoreBoard } from './components/ScoreBoard';
 import { GameHistory } from './components/GameHistory';
 import { ScoringLog } from './components/ScoringLog';
+import { Mail } from 'lucide-react'; // Import Mail icon for feedback button
 import {
   loadCurrentGameState,
   saveCurrentGameState,
@@ -356,5 +357,22 @@ export function App() {
         </div>
         {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} onEditGame={handleEditGame} />}
       </div>
+      <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div>
+            <p>ScoreMore v0.0.1</p>
+            <p>Build: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+          </div>
+          <a 
+            href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
+            className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            title="Send feedback"
+          >
+            <Mail className="w-4 h-4 mr-1" />
+            Send Feedback
+          </a>
+        </div>
+        <p className="mt-2">© 2025 Wayne Gibbings. All rights reserved.</p>
+      </footer>
     </div>;
 }
