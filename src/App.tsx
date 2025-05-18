@@ -14,6 +14,7 @@ import {
   associateScoreLogToGameHistory,
   clearUnassociatedScoreLog,
   deleteGameFromHistory,
+  updateCompletedGame,
   type CurrentGameState // Import the interface
 } from './db';
 
@@ -288,6 +289,55 @@ export function App() {
       // Could add a toast notification here for error feedback
     }
   };
+  
+  const handleEditGame = async (gameId: string, updatedTeamInfo: { id: string, name: string, color: string }[]) => {
+    // Find the game to update
+    const gameToUpdate = gameHistory.find(game => game.id === gameId);
+    if (!gameToUpdate) {
+      console.error("Game not found for editing:", gameId);
+      return;
+    }
+    
+    // Create a deep copy of the game
+    const updatedGame: GameResult = JSON.parse(JSON.stringify(gameToUpdate));
+    
+    // Update team names and colors
+    updatedGame.teams = updatedGame.teams.map(team => {
+      const update = updatedTeamInfo.find(info => info.id === team.id);
+      if (update) {
+        // Update the name and color if provided in the updates
+        return {
+          ...team,
+          name: update.name,
+          color: update.color
+        };
+      }
+      return team;
+    });
+    
+    // Recalculate the winner
+    if (updatedGame.winner !== 'Tie') {
+      // Find which team was the winner by comparing totals
+      const winnerTeam = updatedGame.teams.find(team => team.totalScore > 
+        updatedGame.teams.find(t => t.id !== team.id)?.totalScore || 0);
+        
+      if (winnerTeam) {
+        updatedGame.winner = winnerTeam.name;
+      }
+    }
+    
+    // Save to database
+    const success = await updateCompletedGame(gameId, updatedGame);
+    
+    if (success) {
+      // Update the state with the edited game
+      setGameHistory(prev => prev.map(game => 
+        game.id === gameId ? updatedGame : game
+      ));
+    } else {
+      console.error("Failed to update game with ID:", gameId);
+    }
+  };
 
   if (isLoading) {
     return <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center"><h1 className="text-3xl font-bold">Loading...</h1></div>;
@@ -304,7 +354,7 @@ export function App() {
           {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
           <ScoringLog entries={scoringLog} />
         </div>
-        {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} />}
+        {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} onEditGame={handleEditGame} />}
       </div>
     </div>;
 }

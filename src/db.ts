@@ -143,6 +143,49 @@ export async function saveCompletedGame(gameResult: GameResult) {
   await saveDb(currentDb);
 }
 
+// New function to update completed game team names
+export async function updateCompletedGame(gameId: string, updatedGame: GameResult): Promise<boolean> {
+  try {
+    const currentDb = await getDb();
+    
+    // Update the game history record
+    currentDb.run(
+      'UPDATE game_history SET teams_json = ?, winner = ? WHERE id = ?',
+      [JSON.stringify(updatedGame.teams), updatedGame.winner, gameId]
+    );
+    
+    // Update related log entries if needed
+    const logEntries = await loadScoringLogForGame(gameId);
+    for (const entry of logEntries) {
+      // Only update entries of type 'score'
+      if (entry.type === 'score') {
+        // Find which team this log entry belongs to
+        const teamIndex = updatedGame.teams.findIndex(team => 
+          team.players.some(player => player.name === entry.playerName)
+        );
+        
+        if (teamIndex !== -1) {
+          // Update the team name in the log entry
+          entry.teamName = updatedGame.teams[teamIndex].name;
+          
+          // Update the log entry in the database
+          await currentDb.run(
+            'UPDATE score_log SET entry_json = ? WHERE id = ? AND game_history_id = ?',
+            [JSON.stringify(entry), entry.id, gameId]
+          );
+        }
+      }
+    }
+    
+    // Save the DB changes
+    await saveDb(currentDb);
+    return true;
+  } catch (error) {
+    console.error("Error updating completed game:", error);
+    return false;
+  }
+}
+
 export async function loadGameHistory(): Promise<GameResult[]> {
   const currentDb = await getDb();
   const stmt = currentDb.prepare('SELECT * FROM game_history ORDER BY timestamp DESC');
