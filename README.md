@@ -16,6 +16,8 @@ ScoreMore is a web-based application for tracking scores in sports games. It all
 *   **Data Persistence:** Game state, history, and logs are saved to `localStorage` and reloaded on subsequent visits.
 *   **Date Formatting:** Dates are displayed in YYYY-MM-DD format, and timestamps include HH:MM:SS.
 *   **Visual Accessibility:** Special accommodations for dark team colors on the scoreboard with light backgrounds to ensure readability.
+*   **Help Documentation:** Comprehensive in-app guide accessible via info button with detailed usage instructions.
+*   **Accessibility:** Form inputs include proper labeling and identification for screen readers and assistive technologies.
 
 ## Tech Stack
 
@@ -33,6 +35,7 @@ ScoreMore is a web-based application for tracking scores in sports games. It all
     /components         # React components for UI elements
         GameControls.tsx
         GameHistory.tsx
+        InfoPage.tsx    # Help documentation modal
         Player.tsx
         ScoreBoard.tsx
         ScoringLog.tsx
@@ -88,6 +91,11 @@ README.md               # This file
     *   Displays completed games with expandable details.
     *   Provides delete functionality with confirmation dialog for removing games from history.
 
+*   **`src/components/InfoPage.tsx`:**
+    *   Implements a modal-based help system with comprehensive usage instructions.
+    *   Uses a responsive design that works well on both desktop and mobile devices.
+    *   Organized into logical sections with proper heading hierarchy for accessibility.
+
 *   **`src/db.ts`:**
     *   Initializes the `sql.js` database and loads the `sql-wasm.wasm` file.
     *   Defines the database schema (`current_game_state`, `game_history`, `score_log`).
@@ -99,6 +107,30 @@ README.md               # This file
     *   The WebAssembly binary for `sql.js`. This file must be present in the `public` directory to be served correctly by Vite and loaded by `sql.js`.
 
 ## Feature Details
+
+### Help Documentation
+
+* A comprehensive help guide is available through an info button in the top-right corner of the application.
+* The InfoPage component provides detailed instructions for:
+  * Getting Started with the app
+  * Setting Up Teams
+  * Using Game Controls
+  * Scoring mechanics
+  * Working with Game History
+  * Understanding Data Storage
+  * Getting additional help
+* The modal design allows users to access help without losing their current game state.
+* Content is organized in clear sections with proper headings for easy navigation.
+
+### Accessibility
+
+* All form inputs include proper attributes for accessibility:
+  * Form fields have unique `id` and `name` attributes
+  * Labels are associated with inputs using `htmlFor`
+  * Hidden labels with screen reader text where appropriate
+  * ARIA attributes for interactive elements
+* The HTML document uses proper DOCTYPE and meta tags to ensure standards mode rendering
+* Interactive elements have descriptive text and proper focus states
 
 ### Team Colors
 
