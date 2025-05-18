@@ -5,8 +5,8 @@ This document outlines planned enhancements and feature additions for the ScoreM
 ## High Priority
 
 ### Requested features
-- [ ] Add Edit feature for completed games - allow editing the team names
-- [ ] Change Completed Game summary to not show "0 goals" if a player didn't score but just their name. Also sort the player list.
+- [x] Add Edit feature for completed games - allow editing the team names
+- [x] Change Completed Game summary to not show "0 goals" if a player didn't score but just their name. Also sort the player list.
 - [ ] Add a "copy to clipboard" button on the finished game results. This should copy the team names and scores, and the list of players and goals scored to the clipboard. This will be used to update the team chat and elsewhere
 
 ### Remote Data Storage

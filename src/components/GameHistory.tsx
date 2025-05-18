@@ -197,14 +197,19 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
                   <div key={team.id} className="border rounded p-3">
                     <h3 className="font-medium">{team.name}</h3>
                     <div className="mt-2 space-y-1">
-                      {team.players.map(player => (
-                        <div key={player.id} className="flex justify-between text-sm">
-                          <span>{player.name}</span>
-                          <span className="font-medium">
-                            {player.score} {player.score === 1 ? 'goal' : 'goals'}
-                          </span>
-                        </div>
-                      ))}
+                      {/* Sort players alphabetically by name */}
+                      {[...team.players]
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                        .map(player => (
+                          <div key={player.id} className="flex justify-between text-sm">
+                            <span>{player.name}</span>
+                            {player.score > 0 && (
+                              <span className="font-medium">
+                                {player.score} {player.score === 1 ? 'goal' : 'goals'}
+                              </span>
+                            )}
+                          </div>
+                        ))}
                     </div>
                   </div>
                 ))}
