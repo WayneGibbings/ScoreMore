@@ -128,7 +128,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
     return `${dayOfWeek} ${day}${daySuffix} ${month} ${year}`;
   };
 
-  const copyGameToClipboard = (e: React.MouseEvent, game: GameResult) => {
+  const copyGameToClipboard = async (e: React.MouseEvent, game: GameResult) => {
     e.stopPropagation(); // Prevent triggering the parent onClick
     
     // Format the game summary for clipboard
@@ -158,46 +158,37 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       summary += '\n';
     });
     
-    // Detect Android Chrome specifically
+    // ANDROID CHROME DETECTION - Immediately use manual copy for Android Chrome
     const isAndroid = /Android/i.test(navigator.userAgent);
     const isChrome = /Chrome/i.test(navigator.userAgent);
     
-    // If it's Android Chrome, go directly to manual copy to avoid issues
     if (isAndroid && isChrome) {
-      console.log("Android Chrome detected, using manual copy fallback");
+      console.log("Android Chrome detected, using manual copy mode");
       showManualCopyFallback(summary);
       return;
     }
     
-    // More robust check for clipboard API availability
-    if (
-      typeof navigator !== 'undefined' && 
-      navigator.clipboard && 
-      window.isSecureContext && 
-      typeof navigator.clipboard.writeText === 'function'
-    ) {
+    // Try using the modern Clipboard API with proper feature detection
+    if (navigator && typeof navigator.clipboard === 'object' && 
+        typeof navigator.clipboard.writeText === 'function' && window.isSecureContext) {
       try {
-        navigator.clipboard.writeText(summary)
-          .then(() => {
-            showSuccessToast();
-          })
-          .catch(err => {
-            console.error("Modern clipboard API failed:", err);
-            androidFallbackCopy(summary);
-          });
+        // Use the promise-based API with proper await
+        await navigator.clipboard.writeText(summary);
+        showSuccessToast();
+        return;
       } catch (err) {
-        console.error("Error calling clipboard API:", err);
-        androidFallbackCopy(summary);
+        console.error("Modern clipboard API failed:", err);
+        // Continue to fallback
       }
-    } else {
-      // Navigator clipboard API not available or writeText not a function
-      console.log("Using fallback clipboard method");
-      androidFallbackCopy(summary);
     }
+    
+    // If modern API failed or isn't available, try the execCommand fallback
+    console.log("Using legacy clipboard method");
+    androidFallbackCopy(summary);
   };
-  
+
   // Fallback clipboard method for devices with compatibility issues
-  const androidFallbackCopy = (text: string) => {
+  const androidFallbackCopy = (text: string): boolean => {
     try {
       // For Android, directly use manual copy on devices known to have issues
       const isAndroid = /Android/i.test(navigator.userAgent);
@@ -206,7 +197,7 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       // If it's Android Chrome, skip trying execCommand which often fails
       if (isAndroid && isChrome) {
         showManualCopyFallback(text);
-        return;
+        return false;
       }
       
       // Create a temporary textarea element
@@ -256,12 +247,15 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       
       if (successful) {
         showSuccessToast();
+        return true;
       } else {
         showManualCopyFallback(text);
+        return false;
       }
     } catch (err) {
       console.error('Fallback clipboard method failed:', err);
       showManualCopyFallback(text);
+      return false;
     }
   };
   
@@ -282,15 +276,27 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
   const showManualCopyFallback = (text: string) => {
     // Store the text temporarily for the modal
     setManualCopyText(text);
+    
     // Show the modal
     setShowManualCopyModal(true);
     
     // Show different message based on device
     const isAndroid = /Android/i.test(navigator.userAgent);
+    const isChrome = /Chrome/i.test(navigator.userAgent);
+    
+    let message = 'Please use the manual copy option';
+    
+    // Customize message based on browser/platform
+    if (isAndroid && isChrome) {
+      message = 'Using manual copy for Android Chrome';
+    } else if (isAndroid) {
+      message = 'Using manual copy for Android';
+    } else if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      message = 'Using manual copy for iOS';
+    }
+    
     setToast({
-      message: isAndroid 
-        ? 'Using manual copy for Android compatibility' 
-        : 'Please use the manual copy option', 
+      message: message,
       visible: true
     });
     
@@ -462,29 +468,97 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Copy Game Summary</h3>
-            <p className="mb-2 text-sm text-gray-600">
-              {/Android/i.test(navigator.userAgent) 
-                ? "Tap below and press 'Select all' to select everything, then copy it:"
-                : "Press and hold to select the text below, then copy it manually:"}
-            </p>
+            
+            {/* Show different instructions based on device */}
+            {/Android/i.test(navigator.userAgent) ? (
+              <div className="mb-3 text-sm text-gray-600">
+                <p className="mb-2 font-medium">For Android Chrome:</p>
+                <ol className="list-decimal pl-5 space-y-1">
+                  <li>Tap the text below to try auto-selection</li>
+                  <li>If needed, press and hold to manually select all</li>
+                  <li>Tap "Copy" from the popup menu</li>
+                </ol>
+              </div>
+            ) : (
+              <p className="mb-2 text-sm text-gray-600">
+                Press and hold to select the text below, then copy it manually:
+              </p>
+            )}
+            
+            {/* Text area that attempts to auto-select on tap */}
             <div 
-              className="bg-gray-100 p-3 rounded-md mb-4 max-h-60 overflow-auto"
+              className="bg-gray-100 p-3 rounded-md mb-4 max-h-60 overflow-auto border border-gray-300"
               onClick={(e) => {
-                // On Android, try to select all text in the pre element when clicked
-                if (/Android/i.test(navigator.userAgent)) {
+                // Try to select all text when clicked
+                try {
                   const selection = window.getSelection();
                   const range = document.createRange();
-                  if (selection && e.currentTarget.querySelector('pre')) {
-                    range.selectNodeContents(e.currentTarget.querySelector('pre')!);
+                  const preElement = e.currentTarget.querySelector('pre');
+                  
+                  if (selection && preElement) {
+                    range.selectNodeContents(preElement);
                     selection.removeAllRanges();
                     selection.addRange(range);
+                    
+                    // For mobile devices that support it
+                    if ('setSelectionRange' in preElement) {
+                      preElement.focus();
+                      // @ts-ignore - TypeScript doesn't know pre elements can have setSelectionRange
+                      preElement.setSelectionRange(0, manualCopyText.length);
+                    }
+                    
+                    // Show visual feedback that selection happened
+                    setToast({
+                      message: 'Text selected! Now copy it',
+                      visible: true
+                    });
+                    
+                    setTimeout(() => {
+                      setToast({message: '', visible: false});
+                    }, 2000);
                   }
+                } catch (err) {
+                  console.error("Selection failed:", err);
                 }
               }}
             >
-              <pre className="whitespace-pre-wrap break-words text-sm">{manualCopyText}</pre>
+              <pre 
+                className="whitespace-pre-wrap break-words text-sm focus:outline-none" 
+                tabIndex={0}
+              >
+                {manualCopyText}
+              </pre>
             </div>
-            <div className="flex justify-end">
+            
+            <div className="flex justify-between">
+              <button 
+                onClick={() => {
+                  // Create a new temporary text field just for copying
+                  const textField = document.createElement('textarea');
+                  textField.value = manualCopyText;
+                  document.body.appendChild(textField);
+                  textField.select();
+                  
+                  try {
+                    // Try to copy one more time with execCommand
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                      setToast({message: 'Copied to clipboard!', visible: true});
+                      setTimeout(() => {
+                        setToast({message: '', visible: false});
+                      }, 2000);
+                    }
+                  } catch (err) {
+                    console.error('Copy button failed:', err);
+                  }
+                  
+                  document.body.removeChild(textField);
+                }} 
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Try Copy Again
+              </button>
+              
               <button 
                 onClick={() => setShowManualCopyModal(false)} 
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
