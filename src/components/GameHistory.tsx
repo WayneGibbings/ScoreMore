@@ -19,6 +19,8 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
   const [editedTeamNames, setEditedTeamNames] = useState<{ [teamId: string]: string }>({});
   const [editedTeamColors, setEditedTeamColors] = useState<{ [teamId: string]: string }>({});
   const [toast, setToast] = useState<{message: string; visible: boolean}>({message: '', visible: false});
+  const [showManualCopyModal, setShowManualCopyModal] = useState<boolean>(false);
+  const [manualCopyText, setManualCopyText] = useState<string>('');
   
   // Predefined color options for consistent team colors
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
@@ -156,32 +158,110 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       summary += '\n';
     });
     
-    // Copy to clipboard
-    navigator.clipboard.writeText(summary)
-      .then(() => {
-        // Show toast notification
-        setToast({
-          message: 'Game summary copied to clipboard!', 
-          visible: true
+    // In secure contexts like HTTPS, try modern clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(summary)
+        .then(() => {
+          showSuccessToast();
+        })
+        .catch(err => {
+          console.error("Modern clipboard API failed:", err);
+          // If modern API fails, fall back to execCommand
+          androidFallbackCopy(summary);
         });
-        
-        // Hide toast after 3 seconds
-        setTimeout(() => {
-          setToast({message: '', visible: false});
-        }, 3000);
-      })
-      .catch(err => {
-        console.error('Could not copy text: ', err);
-        setToast({
-          message: 'Failed to copy to clipboard', 
-          visible: true
-        });
-        
-        // Hide toast after 3 seconds
-        setTimeout(() => {
-          setToast({message: '', visible: false});
-        }, 3000);
-      });
+    } else {
+      // In non-secure contexts or if navigator.clipboard is not available
+      androidFallbackCopy(summary);
+    }
+  };
+  
+  // Fallback clipboard method for Android devices
+  const androidFallbackCopy = (text: string) => {
+    try {
+      // Create a temporary textarea element
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      
+      // Make it invisible but part of the document
+      textarea.style.position = 'fixed';
+      textarea.style.top = '0';
+      textarea.style.left = '0';
+      textarea.style.width = '1px';
+      textarea.style.height = '1px';
+      textarea.style.padding = '0';
+      textarea.style.border = 'none';
+      textarea.style.outline = 'none';
+      textarea.style.boxShadow = 'none';
+      textarea.style.background = 'transparent';
+      document.body.appendChild(textarea);
+      
+      // For Android / mobile focus and selection
+      if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        textarea.style.opacity = '1'; // Make it visible for mobile
+        textarea.style.fontSize = '16px'; // Prevent zoom
+        textarea.contentEditable = 'true';
+        textarea.readOnly = false;
+      }
+      
+      // Select the text
+      textarea.focus();
+      textarea.select();
+      
+      // For iOS devices
+      const range = document.createRange();
+      range.selectNodeContents(textarea);
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+        textarea.setSelectionRange(0, textarea.value.length); // For mobile devices
+      }
+      
+      // Try the copy command
+      const successful = document.execCommand('copy');
+      
+      // Clean up
+      document.body.removeChild(textarea);
+      
+      if (successful) {
+        showSuccessToast();
+      } else {
+        showManualCopyFallback(text);
+      }
+    } catch (err) {
+      console.error('Fallback clipboard method failed:', err);
+      showManualCopyFallback(text);
+    }
+  };
+  
+  // Show success toast
+  const showSuccessToast = () => {
+    setToast({
+      message: 'Game summary copied to clipboard!', 
+      visible: true
+    });
+    
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      setToast({message: '', visible: false});
+    }, 3000);
+  };
+  
+  // Show a modal with text for manual copying when all else fails
+  const showManualCopyFallback = (text: string) => {
+    // Store the text temporarily for the modal
+    setManualCopyText(text);
+    // Show the modal
+    setShowManualCopyModal(true);
+    
+    setToast({
+      message: 'Please use the manual copy option', 
+      visible: true
+    });
+    
+    setTimeout(() => {
+      setToast({message: '', visible: false});
+    }, 3000);
   };
   
   return <div className="mt-8">
@@ -339,6 +419,27 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
         <div className="fixed bottom-5 right-5 bg-gray-800 text-white px-6 py-3 rounded-md shadow-lg z-50 flex items-center">
           <ClipboardCopyIcon size={18} className="mr-2" />
           {toast.message}
+        </div>
+      )}
+      
+      {/* Manual Copy Modal for Android fallback */}
+      {showManualCopyModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Copy Game Summary</h3>
+            <p className="mb-2 text-sm text-gray-600">Press and hold to select the text below, then copy it manually:</p>
+            <div className="bg-gray-100 p-3 rounded-md mb-4 max-h-60 overflow-auto">
+              <pre className="whitespace-pre-wrap break-words text-sm">{manualCopyText}</pre>
+            </div>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setShowManualCopyModal(false)} 
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>;
