@@ -168,7 +168,7 @@ export function App() {
   };
 
   const endGame = async () => {
-    const winner = teams[0].totalScore > teams[1].totalScore ? teams[0].name : teams[0].totalScore < teams[1].totalScore ? teams[1].name : 'Tie';
+    const winner = teams[0].totalScore > teams[1].totalScore ? teams[0].name : teams[0].totalScore < teams[1].totalScore ? teams[1].name : 'Draw';
     const gameResult: GameResult = {
       id: Date.now().toString(),
       date: formatDateYYYYMMDD(new Date()), // Changed to YYYY-MM-DD
@@ -319,10 +319,12 @@ export function App() {
     });
     
     // Recalculate the winner
-    if (updatedGame.winner !== 'Tie') {
+    if (updatedGame.winner !== 'Draw') {
       // Find which team was the winner by comparing totals
-      const winnerTeam = updatedGame.teams.find(team => team.totalScore > 
-        updatedGame.teams.find(t => t.id !== team.id)?.totalScore || 0);
+      const winnerTeam = updatedGame.teams.find(team => {
+        const otherTeam = updatedGame.teams.find(t => t.id !== team.id);
+        return team.totalScore > (otherTeam ? otherTeam.totalScore : 0);
+      });
         
       if (winnerTeam) {
         updatedGame.winner = winnerTeam.name;
@@ -371,24 +373,25 @@ export function App() {
           <ScoringLog entries={scoringLog} />
         </div>
         {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} onEditGame={handleEditGame} />}
-      </div>
-      <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-        <div className="flex flex-col md:flex-row justify-between items-center">
-          <div>
-            <p>ScoreMore v0.0.1</p>
-            <p>Build: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+        
+        <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div>
+              <p>ScoreMore v0.0.1</p>
+              <p>Build: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+            </div>
+            <a 
+              href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
+              className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              title="Send feedback"
+            >
+              <Mail className="w-4 h-4 mr-1" />
+              Send Feedback
+            </a>
           </div>
-          <a 
-            href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
-            className="mt-4 md:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            title="Send feedback"
-          >
-            <Mail className="w-4 h-4 mr-1" />
-            Send Feedback
-          </a>
-        </div>
-        <p className="mt-2">© 2025 Wayne Gibbings. All rights reserved.</p>
-      </footer>
-      {/* InfoPage component is already added above, removing duplicate */}
+          <p className="mt-2">© 2025 Wayne Gibbings. All rights reserved.</p>
+        </footer>
+      </div>
+      {/* Footer was moved inside the div above, so it's removed from here */}
     </div>;
 }
