@@ -69,7 +69,7 @@ const formatDateTimeYYYYMMDDHHMMSS = (date: Date) => {
 export function App() {
   const [teams, setTeams] = useState<TeamData[]>([{
     id: '1',
-    name: 'Honeyeaters',
+    name: 'Team A',
     color: 'blue',
     players: [],
     totalScore: 0
