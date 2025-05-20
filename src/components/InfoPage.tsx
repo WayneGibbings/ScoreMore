@@ -91,6 +91,23 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
           </section>
 
           <section>
+            <h3 className="text-lg font-semibold mb-2">Game Notes</h3>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>During an active game, you can add notes in the Scoring Log section.</li>
+              <li>Notes are useful for recording important events, player substitutions, or general observations.</li>
+              <li>To add a note:
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Type your note in the text area at the top of the Scoring Log.</li>
+                  <li>Click "Add Note" to save it to the game log.</li>
+                </ul>
+              </li>
+              <li>Notes appear with a note icon in the scoring log.</li>
+              <li>You can edit or delete notes during the active game by hovering over them and using the edit or delete buttons.</li>
+              <li>Notes are saved with the game and will appear in the game history.</li>
+            </ul>
+          </section>
+
+          <section>
             <h3 className="text-lg font-semibold mb-2">Data Storage</h3>
             <p>
               Your game data is stored locally in your browser. This means:

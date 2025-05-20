@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { GameResult } from '../App';
-import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil, ClipboardCopyIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { GameResult, LogEntry } from '../App';
+import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil, ClipboardCopyIcon, StickyNoteIcon } from 'lucide-react';
+import { loadScoringLogForGame } from '../db';
 
 interface GameHistoryProps {
   history: GameResult[];
@@ -21,6 +22,24 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
   const [toast, setToast] = useState<{message: string; visible: boolean}>({message: '', visible: false});
   const [showManualCopyModal, setShowManualCopyModal] = useState<boolean>(false);
   const [manualCopyText, setManualCopyText] = useState<string>('');
+  const [gameNotes, setGameNotes] = useState<{[gameId: string]: LogEntry[]}>({});
+  
+  // When a game is expanded, load its notes
+  useEffect(() => {
+    if (expandedGame) {
+      const loadGameNotes = async () => {
+        // Only fetch if we don't already have the notes
+        if (!gameNotes[expandedGame]) {
+          const notes = await loadScoringLogForGame(expandedGame);
+          setGameNotes(prev => ({
+            ...prev,
+            [expandedGame]: notes
+          }));
+        }
+      };
+      loadGameNotes();
+    }
+  }, [expandedGame]);
   
   // Predefined color options for consistent team colors
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
@@ -127,7 +146,6 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
     
     return `${dayOfWeek} ${day}${daySuffix} ${month} ${year}`;
   };
-
   const copyGameToClipboard = async (e: React.MouseEvent, game: GameResult) => {
     e.stopPropagation(); // Prevent triggering the parent onClick
     
@@ -157,6 +175,18 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       
       summary += '\n';
     });
+    
+    // Add notes if available
+    if (gameNotes[game.id] && gameNotes[game.id].length > 0) {
+      const notes = gameNotes[game.id].filter(entry => entry.type === 'note');
+      if (notes.length > 0) {
+        summary += `Notes:\n`;
+        notes.forEach(note => {
+          summary += `- ${note.content}\n`;
+        });
+        summary += '\n';
+      }
+    }
     
     // ANDROID CHROME DETECTION - Immediately use manual copy for Android Chrome
     const isAndroid = /Android/i.test(navigator.userAgent);
@@ -403,29 +433,51 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
               </form>
             )}
             
-            {/* Game Details - only shown when expanded and not editing */}
-            {expandedGame === game.id && !editingGameId && (
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                {game.teams.map(team => (
-                  <div key={team.id} className="border rounded p-3">
-                    <h3 className="font-medium">{team.name}</h3>
-                    <div className="mt-2 space-y-1">
-                      {/* Sort players alphabetically by name */}
-                      {[...team.players]
-                        .sort((a, b) => a.name.localeCompare(b.name))
-                        .map(player => (
-                          <div key={player.id} className="flex justify-between text-sm">
-                            <span>{player.name}</span>
-                            {player.score > 0 && (
-                              <span className="font-medium">
-                                {player.score} {player.score === 1 ? 'goal' : 'goals'}
-                              </span>
-                            )}
+            {/* Game Details - only shown when expanded and not editing */}            {expandedGame === game.id && !editingGameId && (
+              <div className="mt-4 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  {game.teams.map(team => (
+                    <div key={team.id} className="border rounded p-3">
+                      <h3 className="font-medium">{team.name}</h3>
+                      <div className="mt-2 space-y-1">
+                        {/* Sort players alphabetically by name */}
+                        {[...team.players]
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map(player => (
+                            <div key={player.id} className="flex justify-between text-sm">
+                              <span>{player.name}</span>
+                              {player.score > 0 && (
+                                <span className="font-medium">
+                                  {player.score} {player.score === 1 ? 'goal' : 'goals'}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Game Notes Section */}
+                {gameNotes[game.id] && gameNotes[game.id].filter(entry => entry.type === 'note').length > 0 && (
+                  <div className="border rounded p-3 bg-blue-50">
+                    <h3 className="font-medium flex items-center">
+                      <StickyNoteIcon size={16} className="text-blue-500 mr-2" />
+                      Game Notes
+                    </h3>
+                    <div className="mt-2 space-y-2">
+                      {gameNotes[game.id]
+                        .filter(entry => entry.type === 'note')
+                        .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+                        .map(note => (
+                          <div key={note.id} className="text-sm border-l-2 border-blue-300 pl-2 py-1">
+                            <div className="text-xs text-gray-500">{note.timestamp}</div>
+                            <div>{note.content}</div>
                           </div>
                         ))}
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>)}

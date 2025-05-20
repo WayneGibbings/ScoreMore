@@ -44,7 +44,8 @@ export type LogEntry = {
   teamName: string;
   playerName: string;
   points: number;
-  type: 'score' | 'halftime';
+  content?: string; // For notes content
+  type: 'score' | 'halftime' | 'note';
 };
 
 // Helper function to format dates as YYYY-MM-DD
@@ -350,6 +351,75 @@ export function App() {
     }
   };
 
+  // Add a function to create notes during games
+  const addNote = async (content: string) => {
+    if (!gameActive) {
+      console.log("Cannot add notes when game is not active");
+      return;
+    }
+    
+    if (!content.trim()) return;
+    
+    const logEntry: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()),
+      teamName: "", // No specific team for notes
+      playerName: "", // No player for notes
+      points: 0, // No points for notes
+      content, // The note content
+      type: 'note'
+    };
+    
+    await addLogEntryToDb(logEntry);
+    setScoringLog(prevLog => [logEntry, ...prevLog]);
+  };
+
+  // Function to edit an existing note
+  const editNote = async (noteId: string, newContent: string) => {
+    if (!newContent.trim()) return;
+    
+    // Find the note in the scoring log
+    const noteEntryIndex = scoringLog.findIndex(entry => entry.id === noteId && entry.type === 'note');
+    if (noteEntryIndex === -1) {
+      console.error("Note not found:", noteId);
+      return;
+    }
+    
+    // Create an updated entry
+    const updatedEntry: LogEntry = {
+      ...scoringLog[noteEntryIndex],
+      content: newContent,
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()) // Update timestamp to show it was edited
+    };
+    
+    // Update in the database
+    await addLogEntryToDb(updatedEntry);
+    
+    // Update in state
+    setScoringLog(prevLog => {
+      const newLog = [...prevLog];
+      newLog[noteEntryIndex] = updatedEntry;
+      return newLog;
+    });
+  };
+
+  // Function to delete a note
+  const deleteNote = async (noteId: string) => {
+    // Find the note in the scoring log
+    const noteEntry = scoringLog.find(entry => entry.id === noteId && entry.type === 'note');
+    if (!noteEntry) {
+      console.error("Note not found:", noteId);
+      return;
+    }
+    
+    // Remove from state
+    setScoringLog(prevLog => prevLog.filter(entry => entry.id !== noteId));
+    
+    // For now, we don't have a delete function in the database
+    // This means the note will still be in the database but not displayed
+    // In a future update, we could add proper deletion from the database
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center"><h1 className="text-3xl font-bold">Loading...</h1></div>;
   }
@@ -374,9 +444,14 @@ export function App() {
         </h1>
         <ScoreBoard teams={teams} isHalftime={isHalftime} />
         <GameControls gameActive={gameActive} startGame={startGame} endGame={endGame} isHalftime={isHalftime} onHalftime={toggleHalftime} disableStart={teams.some(team => team.players.length === 0)} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
-          <ScoringLog entries={scoringLog} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
+          <ScoringLog 
+            entries={scoringLog} 
+            gameActive={gameActive} 
+            onAddNote={addNote}
+            onEditNote={editNote}
+            onDeleteNote={deleteNote}
+          />
         </div>
         {gameHistory.length > 0 && <GameHistory history={gameHistory} onDeleteGame={handleDeleteGame} onEditGame={handleEditGame} />}
         
