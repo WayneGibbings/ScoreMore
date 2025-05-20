@@ -23,37 +23,29 @@ export const Player: React.FC<PlayerProps> = ({
           </button>
         )}
         <span>{player.name}</span>
-      </div>
-      <div className="flex items-center space-x-2">
+      </div>      <div className="flex items-center space-x-2">
+        {/* Show minus button only when in edit mode or when game is active */}
         {(isEditMode || gameActive) && (
-          <>
-            {/* Show minus button only when in edit mode or when game is active */}
-            <button 
-              onClick={() => onUpdateScore(-1)} 
-              disabled={!(gameActive || isEditMode) || player.score <= 0} 
-              className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-              title="Remove goal"
-            >
-              <MinusIcon size={16} />
-            </button>
-            <span className="w-8 text-center font-bold">{player.score}</span>
-            {/* Show plus button only when game is active */}
-            {gameActive && (
-              <button 
-                onClick={() => onUpdateScore(1)} 
-                disabled={!gameActive} 
-                className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-                title="Add goal"
-              >
-                <PlusIcon size={16} />
-              </button>
-            )}
-          </>
+          <button 
+            onClick={() => onUpdateScore(-1)} 
+            disabled={!(gameActive || isEditMode) || player.score <= 0} 
+            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+            title="Remove goal"
+          >
+            <MinusIcon size={16} />
+          </button>
         )}
-        {/* Always show score if not in edit mode and not in active game */}
-        {!gameActive && !isEditMode && (
-          <span className="font-bold">{player.score}</span>
-        )}
+          
+        <span className="w-8 text-center font-bold">{player.score}</span>
+            {/* Always show plus button */}
+        <button 
+          onClick={() => onUpdateScore(1)} 
+          disabled={!gameActive && isEditMode === false} 
+          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+          title="Add goal"
+        >
+          <PlusIcon size={16} />
+        </button>
       </div>
     </div>;
 };
