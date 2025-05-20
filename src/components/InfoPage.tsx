@@ -57,10 +57,9 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
 
           <section>
             <h3 className="text-lg font-semibold mb-2">Scoring</h3>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Use the hockey and goal emojis (🏑🥅) next to a player's name to add a point at any time.</li>
-              <li>The "-" button to remove points is only available during an active game or in edit mode.</li>
-              <li>To remove players or make corrections outside of a game, enter edit mode by clicking the edit icon.</li>
+            <ul className="list-disc pl-5 space-y-2">              <li>Use the hockey and goal emojis (🏑🥅) next to a player's name to add a point during an active game.</li>
+              <li>The "-" button to remove points is available during an active game or in edit mode.</li>
+              <li>To add or remove players at any time, enter edit mode by clicking the edit icon.</li>
               <li>The scoreboard at the top automatically updates as points are added or removed.</li>
               <li>The scoring log shows a chronological record of all scoring events.</li>
             </ul>
@@ -68,12 +67,12 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
 
           <section>
             <h3 className="text-lg font-semibold mb-2">Edit Mode</h3>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Edit mode is indicated by a blue outline around the team card and a checkmark icon.</li>
+            <ul className="list-disc pl-5 space-y-2">              <li>Edit mode is indicated by a blue outline around the team card and a checkmark icon.</li>
+              <li>You can enter edit mode at any time, even during an active game.</li>
               <li>While in edit mode, you can:</li>
               <ul className="list-disc pl-5 space-y-1">
                 <li>Change team name and color</li>
-                <li>Add new players</li>
+                <li>Add new players (useful for late arrivals)</li>
                 <li>Remove existing players (trash icon)</li>
                 <li>Correct scores (add or remove points)</li>
               </ul>

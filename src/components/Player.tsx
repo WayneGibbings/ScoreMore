@@ -15,9 +15,8 @@ export const Player: React.FC<PlayerProps> = ({
   onRemove,
   isEditMode
 }) => {
-  return <div className="flex items-center justify-between bg-gray-50 p-2 rounded">
-      <div className="flex items-center space-x-2">
-        {!gameActive && isEditMode && (
+  return <div className="flex items-center justify-between bg-gray-50 p-2 rounded">      <div className="flex items-center space-x-2">
+        {isEditMode && (
           <button onClick={() => onRemove()} className="text-gray-400 hover:text-red-500" title="Remove player">
             <TrashIcon size={16} />
           </button>

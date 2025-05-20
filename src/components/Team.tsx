@@ -99,11 +99,9 @@ export const Team: React.FC<TeamProps> = ({
             </form>
           ) : (
             <h2 className="text-xl font-bold">{team.name}</h2>
-          )}
-        </div>        <button 
+          )}        </div>        <button 
           onClick={toggleEditMode} 
           className={`ml-3 p-1 rounded-full ${isEditMode ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-500 hover:bg-gray-100'}`}
-          disabled={gameActive}
           title={isEditMode ? "Save & Exit edit mode" : "Edit team"}
         >
           {isEditMode ? <Check size={18} /> : <Edit size={18} />}
@@ -120,8 +118,7 @@ export const Team: React.FC<TeamProps> = ({
           />)}
         </div> : <div className="text-center py-4 text-gray-500">
           No players added yet
-        </div>}
-      {!gameActive && isEditMode && (
+        </div>}      {isEditMode && (
         <form onSubmit={handleAddPlayer} className="mt-4">
           <div className="flex flex-col space-y-2">
             <label htmlFor={`add-player-${team.id}`} className="sr-only">Add player name</label>
