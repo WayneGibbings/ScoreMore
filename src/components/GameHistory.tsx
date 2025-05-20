@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GameResult, LogEntry } from '../App';
-import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil, ClipboardCopyIcon, StickyNoteIcon } from 'lucide-react';
-import { loadScoringLogForGame } from '../db';
+import { ChevronDownIcon, ChevronUpIcon, Trash2Icon, Pencil, ClipboardCopyIcon, StickyNoteIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { loadScoringLogForGame, editGameNote, deleteGameNote } from '../db';
 
 interface GameHistoryProps {
   history: GameResult[];
@@ -19,7 +19,10 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
   const [editingGameId, setEditingGameId] = useState<string | null>(null);
   const [editedTeamNames, setEditedTeamNames] = useState<{ [teamId: string]: string }>({});
   const [editedTeamColors, setEditedTeamColors] = useState<{ [teamId: string]: string }>({});
-  const [toast, setToast] = useState<{message: string; visible: boolean}>({message: '', visible: false});
+  // New state for note editing
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingNoteContent, setEditingNoteContent] = useState<string>('');
+  const [toast, setToast] = useState<{message: string; visible: boolean; type?: 'success' | 'error'}>({message: '', visible: false});
   const [showManualCopyModal, setShowManualCopyModal] = useState<boolean>(false);
   const [manualCopyText, setManualCopyText] = useState<string>('');
   const [gameNotes, setGameNotes] = useState<{[gameId: string]: LogEntry[]}>({});
@@ -40,6 +43,97 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
       loadGameNotes();
     }
   }, [expandedGame]);
+  
+  // Functions for note editing
+  const startEditingNote = (gameId: string, noteId: string, content: string) => {
+    setEditingNoteId(noteId);
+    setEditingNoteContent(content || '');
+  };
+  
+  const cancelEditingNote = () => {
+    setEditingNoteId(null);
+    setEditingNoteContent('');
+  };
+  
+  const handleEditNote = async (e: React.FormEvent, gameId: string) => {
+    e.preventDefault();
+    if (!editingNoteId || !editingNoteContent.trim() || !gameId) return;
+    
+    const success = await editGameNote(editingNoteId, gameId, editingNoteContent);
+    
+    if (success) {
+      // Update the note in the local state
+      setGameNotes(prev => {
+        const updatedNotes = prev[gameId].map(note => 
+          note.id === editingNoteId 
+            ? { ...note, content: editingNoteContent } 
+            : note
+        );
+        return { ...prev, [gameId]: updatedNotes };
+      });
+      
+      // Show success toast
+      setToast({
+        message: 'Note updated successfully',
+        visible: true,
+        type: 'success'
+      });
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        setToast({message: '', visible: false});
+      }, 3000);
+    } else {
+      // Show error toast
+      setToast({
+        message: 'Failed to update note',
+        visible: true,
+        type: 'error'
+      });
+      
+      // Hide toast after 3 seconds
+      setTimeout(() => {
+        setToast({message: '', visible: false});
+      }, 3000);
+    }
+    
+    // Reset editing state
+    setEditingNoteId(null);
+    setEditingNoteContent('');
+  };
+  
+  const handleDeleteNote = async (gameId: string, noteId: string) => {
+    if (!noteId || !gameId) return;
+    
+    const success = await deleteGameNote(noteId, gameId);
+    
+    if (success) {
+      // Remove the note from the local state
+      setGameNotes(prev => {
+        const updatedNotes = prev[gameId].filter(note => note.id !== noteId);
+        return { ...prev, [gameId]: updatedNotes };
+      });
+      
+      // Show success toast
+      setToast({
+        message: 'Note deleted successfully',
+        visible: true,
+        type: 'success'
+      });
+    } else {
+      // Show error toast
+      setToast({
+        message: 'Failed to delete note',
+        visible: true,
+        type: 'error'
+      });
+    }
+    
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      setToast({message: '', visible: false});
+    }, 3000);
+  };
   
   // Predefined color options for consistent team colors
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
@@ -464,15 +558,62 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
                     <h3 className="font-medium flex items-center">
                       <StickyNoteIcon size={16} className="text-blue-500 mr-2" />
                       Game Notes
-                    </h3>
-                    <div className="mt-2 space-y-2">
+                    </h3>                    <div className="mt-2 space-y-2">
                       {gameNotes[game.id]
                         .filter(entry => entry.type === 'note')
                         .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
                         .map(note => (
-                          <div key={note.id} className="text-sm border-l-2 border-blue-300 pl-2 py-1">
+                          <div key={note.id} className="relative group text-sm border-l-2 border-blue-300 pl-2 py-1">
                             <div className="text-xs text-gray-500">{note.timestamp}</div>
-                            <div>{note.content}</div>
+                            
+                            {editingNoteId === note.id ? (
+                              <form onSubmit={(e) => handleEditNote(e, game.id)} className="mt-1">
+                                <textarea
+                                  value={editingNoteContent}
+                                  onChange={(e) => setEditingNoteContent(e.target.value)}
+                                  className="w-full border rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                  rows={2}
+                                />
+                                <div className="flex justify-end space-x-2 mt-1">
+                                  <button 
+                                    type="button" 
+                                    onClick={cancelEditingNote}
+                                    className="text-xs text-gray-500 hover:text-gray-700"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button 
+                                    type="submit"
+                                    disabled={!editingNoteContent.trim()}
+                                    className="text-xs bg-blue-500 text-white px-2 py-0.5 rounded hover:bg-blue-600 disabled:bg-gray-300"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </form>
+                            ) : (
+                              <>
+                                <div className="pr-16">{note.content}</div>
+                                
+                                {/* Edit/Delete buttons */}
+                                <div className="absolute right-0 top-1 hidden group-hover:flex space-x-1 bg-white bg-opacity-75 rounded p-0.5">
+                                  <button 
+                                    onClick={() => startEditingNote(game.id, note.id, note.content || '')}
+                                    className="text-gray-400 hover:text-blue-500 focus:outline-none"
+                                    title="Edit note"
+                                  >
+                                    <PencilIcon size={14} />
+                                  </button>
+                                  <button 
+                                    onClick={() => handleDeleteNote(game.id, note.id)}
+                                    className="text-gray-400 hover:text-red-500 focus:outline-none"
+                                    title="Delete note"
+                                  >
+                                    <TrashIcon size={14} />
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </div>
                         ))}
                     </div>
@@ -482,6 +623,20 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
             )}
           </div>)}
       </div>
+      
+      {/* Toast Notification */}
+      {toast.visible && (
+        <div className={`fixed bottom-5 right-5 px-6 py-3 rounded-md shadow-lg z-50 flex items-center ${
+          toast.type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'
+        }`}>
+          {toast.type === 'error' ? (
+            <TrashIcon size={18} className="mr-2" />
+          ) : (
+            <PencilIcon size={18} className="mr-2" />
+          )}
+          {toast.message}
+        </div>
+      )}
       
       {/* Confirmation Dialog */}
       {gameToDelete && (

@@ -305,3 +305,71 @@ export async function deleteGameFromHistory(gameId: string): Promise<boolean> {
     return false;
   }
 }
+
+// Function to edit a note in game history
+export async function editGameNote(noteId: string, gameHistoryId: string, newContent: string): Promise<boolean> {
+  try {
+    const currentDb = await getDb();
+    
+    // First get the existing note
+    const stmt = currentDb.prepare('SELECT entry_json FROM score_log WHERE id = ? AND game_history_id = ?');
+    stmt.bind([noteId, gameHistoryId]);
+    
+    if (!stmt.step()) {
+      stmt.free();
+      console.error("Note not found for edit:", noteId);
+      return false;
+    }
+    
+    const row = stmt.getAsObject();
+    stmt.free();
+    
+    try {
+      // Parse the entry JSON, update it, and save it back
+      const entry: LogEntry = JSON.parse(row.entry_json as string);
+      
+      if (entry.type !== 'note') {
+        console.error("Cannot edit non-note entry:", noteId);
+        return false;
+      }
+      
+      entry.content = newContent;
+      // Update the timestamp to show it was edited
+      entry.timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+      
+      // Save the updated entry
+      currentDb.run(
+        'UPDATE score_log SET entry_json = ? WHERE id = ? AND game_history_id = ?',
+        [JSON.stringify(entry), noteId, gameHistoryId]
+      );
+      
+      await saveDb(currentDb);
+      return true;
+    } catch (error) {
+      console.error("Error parsing or updating note:", error);
+      return false;
+    }
+  } catch (error) {
+    console.error("Error editing game note:", error);
+    return false;
+  }
+}
+
+// Function to delete a note from game history
+export async function deleteGameNote(noteId: string, gameHistoryId: string): Promise<boolean> {
+  try {
+    const currentDb = await getDb();
+    
+    // Delete the note
+    currentDb.run(
+      'DELETE FROM score_log WHERE id = ? AND game_history_id = ? AND entry_json LIKE \'%"type":"note"%\'',
+      [noteId, gameHistoryId]
+    );
+    
+    await saveDb(currentDb);
+    return true;
+  } catch (error) {
+    console.error("Error deleting game note:", error);
+    return false;
+  }
+}
