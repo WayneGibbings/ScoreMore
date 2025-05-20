@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
-import { Pencil, Settings } from 'lucide-react'; // Import Pencil and Settings icons
+import { Edit } from 'lucide-react'; // Import Edit icon instead of Pencil and Settings
 
 // Helper function to get hex color codes
 const getColorHex = (color: string): string => {
@@ -37,10 +37,9 @@ export const Team: React.FC<TeamProps> = ({
   onUpdateTeamName
 }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
-  const [isEditMode, setIsEditMode] = useState(false);
   
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
 
@@ -55,13 +54,24 @@ export const Team: React.FC<TeamProps> = ({
   const handleTeamNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateTeamName(teamName, teamColor);
-    setIsEditingName(false);
+    // Don't exit edit mode, just update the team name
+  };
+
+  const toggleEditMode = () => {
+    const newEditMode = !isEditMode;
+    setIsEditMode(newEditMode);
+    
+    // If leaving edit mode and name/color has changed, save it
+    if (!newEditMode && (teamName !== team.name || teamColor !== team.color)) {
+      onUpdateTeamName(teamName, teamColor);
+    }
   };
 
   return <div className="bg-white rounded-lg shadow-md p-4 border-t-4" style={{ borderTopColor: `var(--color-${team.color}-500, #${getColorHex(team.color)})` }}>
       <div className="flex justify-between items-center mb-4">
-        {isEditingName ? <form onSubmit={handleTeamNameSubmit} className="flex-1">
-            <label htmlFor={`team-name-${team.id}`} className="sr-only">Team name</label>
+        {isEditMode ? (
+          <form onSubmit={handleTeamNameSubmit} className="flex-1">
+            <label htmlFor={`team-name-${team.id}`} className="block text-sm font-medium text-gray-700">Team Name</label>
             <input 
               type="text"
               id={`team-name-${team.id}`}
@@ -71,20 +81,8 @@ export const Team: React.FC<TeamProps> = ({
               className="border rounded px-2 py-1 w-full" 
               autoFocus 
             />
-            <div className="flex mt-2 space-x-2">
-              <button type="submit" className="bg-green-500 text-white px-2 py-1 rounded text-sm">
-                Save
-              </button>
-              <button type="button" onClick={() => {
-            setTeamName(team.name);
-            setTeamColor(team.color);
-            setIsEditingName(false);
-          }} className="bg-gray-500 text-white px-2 py-1 rounded text-sm">
-                Cancel
-              </button>
-            </div>
             <div className="mt-2">
-              <label htmlFor={`team-color-${team.id}`} className="block text-sm font-medium text-gray-700">Select Team Color</label>
+              <label htmlFor={`team-color-${team.id}`} className="block text-sm font-medium text-gray-700">Team Color</label>
               <select 
                 id={`team-color-${team.id}`}
                 name={`team-color-${team.id}`}
@@ -97,23 +95,18 @@ export const Team: React.FC<TeamProps> = ({
                   </option>)}
               </select>
             </div>
-          </form> : <>
-            <h2 className="text-xl font-bold">{team.name}</h2>
-            <div className="flex space-x-2">
-              <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-gray-700 disabled:opacity-50" disabled={gameActive} title="Edit team name">
-                <Pencil size={18} />
-              </button>
-              {!gameActive && (
-                <button 
-                  onClick={() => setIsEditMode(!isEditMode)} 
-                  className={`text-gray-500 hover:text-gray-700 ${isEditMode ? 'text-blue-500' : ''}`} 
-                  title={isEditMode ? "Exit edit mode" : "Enter edit mode"}
-                >
-                  <Settings size={18} />
-                </button>
-              )}
-            </div>
-          </>}
+          </form>
+        ) : (
+          <h2 className="text-xl font-bold">{team.name}</h2>
+        )}
+        <button 
+          onClick={toggleEditMode} 
+          className={`text-gray-500 hover:text-gray-700 ${isEditMode ? 'text-blue-500' : ''}`} 
+          disabled={gameActive}
+          title={isEditMode ? "Save & Exit edit mode" : "Edit team"}
+        >
+          <Edit size={18} />
+        </button>
       </div>
       {team.players.length > 0 ? <div className="space-y-2 mb-4">
           {team.players.map(player => <Player 
