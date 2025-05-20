@@ -89,6 +89,12 @@ export function App() {
   const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
   const [isInfoPageOpen, setIsInfoPageOpen] = useState(false); // State for info page modal
 
+  const appVersionFromEnv = import.meta.env.VITE_APP_VERSION || '0.0.1';
+  const buildNumberFromEnv = import.meta.env.VITE_BUILD_NUMBER;
+  const buildDisplayInfo = buildNumberFromEnv 
+    ? `Build: ${buildNumberFromEnv}` 
+    : `Dev Build: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
   // Load initial state from DB
   useEffect(() => {
     async function loadState() {
@@ -377,8 +383,8 @@ export function App() {
         <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div>
-              <p>ScoreMore v0.0.1</p>
-              <p>Build: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+              <p>ScoreMore v{appVersionFromEnv}</p>
+              <p>{buildDisplayInfo}</p>
             </div>
             <a 
               href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
@@ -389,9 +395,8 @@ export function App() {
               Send Feedback
             </a>
           </div>
-          <p className="mt-2">© 2025 Wayne Gibbings. All rights reserved.</p>
+          <p className="mt-2">© {new Date().getFullYear()} Wayne Gibbings. All rights reserved.</p>
         </footer>
       </div>
-      {/* Footer was moved inside the div above, so it's removed from here */}
     </div>;
 }

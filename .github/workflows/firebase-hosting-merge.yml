@@ -11,8 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for .git folder
+      - name: Get commit count
+        id: commit_count
+        run: echo "COUNT=$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
       - run: npm ci && npm run build
         env: 
+          VITE_APP_VERSION: ${{ vars.APP_VERSION || 'nan' }}
+          VITE_BUILD_NUMBER: ${{ steps.commit_count.outputs.COUNT }}
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
           VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
           VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
