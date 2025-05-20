@@ -11,7 +11,8 @@ ScoreMore is a web-based application for tracking scores in sports games. It all
 *   **Game State:** Start, end, and manage halftime for games.
 *   **Game Halves:** Tracks "First Half" and "Second Half" of a game.
 *   **Scoring Log:** View a detailed log of scoring events and halftime changes, with timestamps.
-*   **Game History:** View a history of completed games, including teams, scores, and winners.
+*   **Game Notes:** Add, edit, and delete notes during games to record important events or observations.
+*   **Game History:** View a history of completed games, including teams, scores, winners, and notes.
 *   **Game Deletion:** Remove completed games from history with confirmation dialog to prevent accidental deletion.
 *   **Data Persistence:** Game state, history, and logs are saved to `localStorage` and reloaded on subsequent visits.
 *   **Date Formatting:** Dates are displayed in YYYY-MM-DD format, and timestamps include HH:MM:SS.

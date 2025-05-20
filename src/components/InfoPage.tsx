@@ -36,29 +36,47 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-lg font-semibold mb-2">Setting Up Teams</h3>
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Enter team names in the provided fields at the top of each team box.</li>
-              <li>Select a color for each team from the dropdown menu.</li>
-              <li>Add players to each team by typing their names in the "Add Player" field and pressing Enter.</li>
+              <li>Click the edit (pencil) icon on a team to enter edit mode.</li> 
+              <li>In edit mode, you can update the team name and select a color from the dropdown menu.</li>
+              <li>Add players by typing their names in the "Add player" field and clicking "Add Player".</li>
+              <li>Click the checkmark icon to save your changes and exit edit mode.</li>
               <li>You must add at least one player to each team before starting the game.</li>
             </ol>
-          </section>
-
-          <section>
+          </section>          <section>
             <h3 className="text-lg font-semibold mb-2">Game Controls</h3>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Start Game:</strong> Click the "Start Game" button once your teams are ready.</li>
-              <li><strong>Halftime:</strong> Toggle halftime by clicking the "Halftime" button.</li>
-              <li><strong>End Game:</strong> Click "End Game" to finish the current game and record it in the history.</li>
+              <li>The game control button changes based on the current game state, progressing through these states:</li>
+              <ol className="list-decimal pl-5 mt-2 space-y-1">
+                <li><strong>Start Game:</strong> Click to begin a new game when your teams are ready.</li>
+                <li><strong>Half Time:</strong> Click to pause the game at halftime.</li>
+                <li><strong>Resume Game:</strong> Click to continue playing after halftime.</li>
+                <li><strong>End Game:</strong> Click to finish the current game and record it in the history.</li>
+              </ol>
             </ul>
           </section>
 
           <section>
             <h3 className="text-lg font-semibold mb-2">Scoring</h3>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>During an active game, use the "+" button next to a player's name to add a point.</li>
-              <li>Use the "-" button to subtract a point if needed.</li>
+            <ul className="list-disc pl-5 space-y-2">              <li>Use the hockey and goal emojis (🏑🥅) next to a player's name to add a point during an active game.</li>
+              <li>The "-" button to remove points is available during an active game or in edit mode.</li>
+              <li>To add or remove players at any time, enter edit mode by clicking the edit icon.</li>
               <li>The scoreboard at the top automatically updates as points are added or removed.</li>
-              <li>The scoring log on the right side shows a chronological record of all scoring events.</li>
+              <li>The scoring log shows a chronological record of all scoring events.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Edit Mode</h3>
+            <ul className="list-disc pl-5 space-y-2">              <li>Edit mode is indicated by a blue outline around the team card and a checkmark icon.</li>
+              <li>You can enter edit mode at any time, even during an active game.</li>
+              <li>While in edit mode, you can:</li>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Change team name and color</li>
+                <li>Add new players (useful for late arrivals)</li>
+                <li>Remove existing players (trash icon)</li>
+                <li>Correct scores (add or remove points)</li>
+              </ul>
+              <li>Click the checkmark icon to save changes and exit edit mode.</li>
             </ul>
           </section>
 
@@ -74,6 +92,23 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
           </section>
 
           <section>
+            <h3 className="text-lg font-semibold mb-2">Game Notes</h3>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>During an active game, you can add notes in the Scoring Log section.</li>
+              <li>Notes are useful for recording important events, player substitutions, or general observations.</li>
+              <li>To add a note:
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Type your note in the text area at the top of the Scoring Log.</li>
+                  <li>Click "Add Note" to save it to the game log.</li>
+                </ul>
+              </li>
+              <li>Notes appear with a note icon in the scoring log.</li>
+              <li>You can edit or delete notes during the active game by hovering over them and using the edit or delete buttons.</li>
+              <li>Notes are saved with the game and will appear in the game history.</li>
+            </ul>
+          </section>
+
+          <section>
             <h3 className="text-lg font-semibold mb-2">Data Storage</h3>
             <p>
               Your game data is stored locally in your browser. This means:
@@ -81,7 +116,7 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
             <ul className="list-disc pl-5 space-y-2">
               <li>Your data will persist between sessions on the same device and browser.</li>
               <li>Clearing your browser data will also clear your game history.</li>
-              <li>Your data is not synced between devices (yet!).</li>
+              <li>Your data is not synced between devices.</li>
             </ul>
           </section>
 
