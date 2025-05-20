@@ -92,8 +92,14 @@ export function App() {
   const appVersionFromEnv = import.meta.env.VITE_APP_VERSION || '0.0.1';
   const buildNumberFromEnv = import.meta.env.VITE_BUILD_NUMBER;
   const buildDisplayInfo = buildNumberFromEnv 
-    ? `Build: ${buildNumberFromEnv}` 
-    : `Dev Build: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+    ? `${buildNumberFromEnv}` 
+    : `Dev Build: ${new Date().toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}`;
 
   // Load initial state from DB
   useEffect(() => {
@@ -384,7 +390,7 @@ export function App() {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div>
               <p>ScoreMore v{appVersionFromEnv}</p>
-              <p>{buildDisplayInfo}</p>
+              <p>Build #{buildDisplayInfo}</p>
             </div>
             <a 
               href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
