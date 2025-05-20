@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
-import { Edit, ArrowLeft } from 'lucide-react'; // Import Edit and ArrowLeft icons
+import { Edit, Check } from 'lucide-react'; // Import Edit and Check icons
 
 // Helper function to get hex color codes
 const getColorHex = (color: string): string => {
@@ -100,14 +100,13 @@ export const Team: React.FC<TeamProps> = ({
           ) : (
             <h2 className="text-xl font-bold">{team.name}</h2>
           )}
-        </div>
-        <button 
+        </div>        <button 
           onClick={toggleEditMode} 
-          className={`ml-3 p-1 rounded-full ${isEditMode ? 'text-blue-600 bg-blue-100 hover:bg-blue-200' : 'text-gray-500 hover:bg-gray-100'}`}
+          className={`ml-3 p-1 rounded-full ${isEditMode ? 'text-green-600 bg-green-100 hover:bg-green-200' : 'text-gray-500 hover:bg-gray-100'}`}
           disabled={gameActive}
           title={isEditMode ? "Save & Exit edit mode" : "Edit team"}
         >
-          {isEditMode ? <ArrowLeft size={18} /> : <Edit size={18} />}
+          {isEditMode ? <Check size={18} /> : <Edit size={18} />}
         </button>
       </div>
       {team.players.length > 0 ? <div className="space-y-2 mb-4">

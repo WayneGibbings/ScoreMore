@@ -36,14 +36,15 @@ export const Player: React.FC<PlayerProps> = ({
           </button>
         )}
             <span className="w-8 text-center font-bold">{player.score}</span>
-            {/* Always show goal button with hockey emoji */}
-        <button 
+            {/* Always show goal button with hockey emoji */}        <button 
           onClick={() => onUpdateScore(1)} 
           disabled={!gameActive && isEditMode === false} 
-          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+          className="px-2 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
           title="Add goal"
         >
-          <span role="img" aria-label="Add goal">🏑🥅</span>
+          <span role="img" aria-label="Add goal" className="flex items-center space-x-1">
+            <span>🏑</span><span>🥅</span>
+          </span>
         </button>
       </div>
     </div>;
