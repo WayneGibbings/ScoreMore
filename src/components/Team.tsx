@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
-import { Edit, Check } from 'lucide-react'; // Import Edit and Check icons
+import { Edit, Check, ChevronDown } from 'lucide-react'; // Added ChevronDown icon
 
 // Helper function to get hex color codes
 const getColorHex = (color: string): string => {
@@ -18,6 +18,70 @@ const getColorHex = (color: string): string => {
     'black': '1a1a1a' // Much darker gray, very close to black
   };
   return colorMap[color] || '3b82f6'; // Default to blue if color not found
+};
+
+// Custom color picker component
+interface ColorPickerProps {
+  value: string;
+  onChange: (color: string) => void;
+  id: string;
+}
+
+const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, id }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
+  
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        id={id}
+        onClick={() => setIsOpen(!isOpen)}
+        className="mt-1 relative w-full bg-white border border-gray-300 rounded-md shadow-sm pl-3 pr-10 py-2 text-left focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      >
+        <div className="flex items-center">
+          <div 
+            className="h-4 w-4 rounded-sm mr-2" 
+            style={{ backgroundColor: `#${getColorHex(value)}` }} 
+          />
+          <span className="block truncate capitalize">{value}</span>
+        </div>
+        <span className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+          <ChevronDown size={16} className="text-gray-400" />
+        </span>
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-10 mt-1 w-full bg-white shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm">
+          {colorOptions.map((color) => (
+            <div
+              key={color}
+              className={`${
+                color === value ? 'bg-gray-100' : 'hover:bg-gray-50'
+              } cursor-pointer select-none relative py-2 pl-3 pr-9`}
+              onClick={() => {
+                onChange(color);
+                setIsOpen(false);
+              }}
+            >
+              <div className="flex items-center">
+                <div 
+                  className="h-4 w-4 rounded-sm mr-2" 
+                  style={{ backgroundColor: `#${getColorHex(color)}` }} 
+                />
+                <span className="block truncate capitalize">{color}</span>
+              </div>
+              {color === value && (
+                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+                  <Check size={16} />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 interface TeamProps {
@@ -40,8 +104,6 @@ export const Team: React.FC<TeamProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);
   const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
-  
-  const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
 
   const handleAddPlayer = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,17 +146,11 @@ export const Team: React.FC<TeamProps> = ({
               />
               <div className="mt-2">
                 <label htmlFor={`team-color-${team.id}`} className="block text-sm font-medium text-gray-700">Team Color</label>
-                <select 
+                <ColorPicker 
                   id={`team-color-${team.id}`}
-                  name={`team-color-${team.id}`}
                   value={teamColor} 
-                  onChange={e => setTeamColor(e.target.value)} 
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                >
-                  {colorOptions.map(color => <option key={color} value={color}>
-                      {color}
-                    </option>)}
-                </select>
+                  onChange={setTeamColor} 
+                />
               </div>
             </form>
           ) : (
