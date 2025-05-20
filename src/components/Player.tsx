@@ -28,7 +28,7 @@ export const Player: React.FC<PlayerProps> = ({
         {(isEditMode || gameActive) && (
           <button 
             onClick={() => onUpdateScore(-1)} 
-            disabled={!(gameActive || isEditMode) || player.score <= 0} 
+            disabled={player.score <= 0} 
             className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
             title="Remove goal"
           >
