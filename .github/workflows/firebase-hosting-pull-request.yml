@@ -22,13 +22,14 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
-
       - uses: FirebaseExtended/action-hosting-deploy@v0
-        id: deploy_preview # Add an ID to this step
+        id: deploy_preview
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SCOREMORE_E9DE6 }}
-          projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}      - name: Add preview URL to Job Summary
+          projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+
+      - name: Add preview URL to Job Summary
         if: steps.deploy_preview.outputs.details_url # Only run if details_url is set
         run: |
           echo "# 🚀 Firebase Preview Deployment" >> $GITHUB_STEP_SUMMARY
