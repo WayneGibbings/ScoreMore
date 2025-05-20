@@ -1,6 +1,6 @@
 import React from 'react';
 import { Player as PlayerType } from '../App';
-import { MinusIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import { MinusIcon, TrashIcon } from 'lucide-react';
 interface PlayerProps {
   player: PlayerType;
   gameActive: boolean;
@@ -35,16 +35,15 @@ export const Player: React.FC<PlayerProps> = ({
             <MinusIcon size={16} />
           </button>
         )}
-          
-        <span className="w-8 text-center font-bold">{player.score}</span>
-            {/* Always show plus button */}
+            <span className="w-8 text-center font-bold">{player.score}</span>
+            {/* Always show goal button with hockey emoji */}
         <button 
           onClick={() => onUpdateScore(1)} 
           disabled={!gameActive && isEditMode === false} 
           className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
           title="Add goal"
         >
-          <PlusIcon size={16} />
+          <span role="img" aria-label="Add goal">🏑🥅</span>
         </button>
       </div>
     </div>;
