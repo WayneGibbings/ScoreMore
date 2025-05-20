@@ -383,8 +383,7 @@ export function App() {
         <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div>
-              <p>ScoreMore v{appVersionFromEnv}</p>
-              <p>{buildDisplayInfo}</p>
+              <p>Build #{buildDisplayInfo}</p>
             </div>
             <a 
               href="mailto:wayne+scoremore@gibbings.net?subject=ScoreMore%20Feedback" 
