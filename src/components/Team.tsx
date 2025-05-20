@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
-import { Edit } from 'lucide-react'; // Import Edit icon instead of Pencil and Settings
+import { Edit, ArrowLeft } from 'lucide-react'; // Import Edit and ArrowLeft icons
 
 // Helper function to get hex color codes
 const getColorHex = (color: string): string => {
@@ -67,45 +67,47 @@ export const Team: React.FC<TeamProps> = ({
     }
   };
 
-  return <div className="bg-white rounded-lg shadow-md p-4 border-t-4" style={{ borderTopColor: `var(--color-${team.color}-500, #${getColorHex(team.color)})` }}>
-      <div className="flex justify-between items-center mb-4">
-        {isEditMode ? (
-          <form onSubmit={handleTeamNameSubmit} className="flex-1">
-            <label htmlFor={`team-name-${team.id}`} className="block text-sm font-medium text-gray-700">Team Name</label>
-            <input 
-              type="text"
-              id={`team-name-${team.id}`}
-              name={`team-name-${team.id}`}
-              value={teamName} 
-              onChange={e => setTeamName(e.target.value)} 
-              className="border rounded px-2 py-1 w-full" 
-              autoFocus 
-            />
-            <div className="mt-2">
-              <label htmlFor={`team-color-${team.id}`} className="block text-sm font-medium text-gray-700">Team Color</label>
-              <select 
-                id={`team-color-${team.id}`}
-                name={`team-color-${team.id}`}
-                value={teamColor} 
-                onChange={e => setTeamColor(e.target.value)} 
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-              >
-                {colorOptions.map(color => <option key={color} value={color}>
-                    {color}
-                  </option>)}
-              </select>
-            </div>
-          </form>
-        ) : (
-          <h2 className="text-xl font-bold">{team.name}</h2>
-        )}
+  return <div className={`bg-white rounded-lg shadow-md p-4 border-t-4 ${isEditMode ? 'ring-2 ring-blue-500' : ''}`} style={{ borderTopColor: `var(--color-${team.color}-500, #${getColorHex(team.color)})` }}>
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex-1">
+          {isEditMode ? (
+            <form onSubmit={handleTeamNameSubmit} className="w-full">
+              <label htmlFor={`team-name-${team.id}`} className="block text-sm font-medium text-gray-700">Team Name</label>
+              <input 
+                type="text"
+                id={`team-name-${team.id}`}
+                name={`team-name-${team.id}`}
+                value={teamName} 
+                onChange={e => setTeamName(e.target.value)} 
+                className="border rounded px-2 py-1 w-full" 
+                autoFocus 
+              />
+              <div className="mt-2">
+                <label htmlFor={`team-color-${team.id}`} className="block text-sm font-medium text-gray-700">Team Color</label>
+                <select 
+                  id={`team-color-${team.id}`}
+                  name={`team-color-${team.id}`}
+                  value={teamColor} 
+                  onChange={e => setTeamColor(e.target.value)} 
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                >
+                  {colorOptions.map(color => <option key={color} value={color}>
+                      {color}
+                    </option>)}
+                </select>
+              </div>
+            </form>
+          ) : (
+            <h2 className="text-xl font-bold">{team.name}</h2>
+          )}
+        </div>
         <button 
           onClick={toggleEditMode} 
-          className={`text-gray-500 hover:text-gray-700 ${isEditMode ? 'text-blue-500' : ''}`} 
+          className={`ml-3 p-1 rounded-full ${isEditMode ? 'text-blue-600 bg-blue-100 hover:bg-blue-200' : 'text-gray-500 hover:bg-gray-100'}`}
           disabled={gameActive}
           title={isEditMode ? "Save & Exit edit mode" : "Edit team"}
         >
-          <Edit size={18} />
+          {isEditMode ? <ArrowLeft size={18} /> : <Edit size={18} />}
         </button>
       </div>
       {team.players.length > 0 ? <div className="space-y-2 mb-4">
