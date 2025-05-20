@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
-import { Pencil } from 'lucide-react'; // Import Pencil icon
+import { Pencil, Settings } from 'lucide-react'; // Import Pencil and Settings icons
 
 // Helper function to get hex color codes
 const getColorHex = (color: string): string => {
@@ -40,6 +40,7 @@ export const Team: React.FC<TeamProps> = ({
   const [isEditingName, setIsEditingName] = useState(false);
   const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
+  const [isEditMode, setIsEditMode] = useState(false);
   
   const colorOptions = ['red', 'blue', 'green', 'yellow', 'purple', 'pink', 'orange', 'teal', 'indigo', 'black'];
 
@@ -98,33 +99,52 @@ export const Team: React.FC<TeamProps> = ({
             </div>
           </form> : <>
             <h2 className="text-xl font-bold">{team.name}</h2>
-            <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-gray-700 disabled:opacity-50" disabled={gameActive} title="Edit team name">
-              <Pencil size={18} />
-            </button>
+            <div className="flex space-x-2">
+              <button onClick={() => setIsEditingName(true)} className="text-gray-500 hover:text-gray-700 disabled:opacity-50" disabled={gameActive} title="Edit team name">
+                <Pencil size={18} />
+              </button>
+              {!gameActive && (
+                <button 
+                  onClick={() => setIsEditMode(!isEditMode)} 
+                  className={`text-gray-500 hover:text-gray-700 ${isEditMode ? 'text-blue-500' : ''}`} 
+                  title={isEditMode ? "Exit edit mode" : "Enter edit mode"}
+                >
+                  <Settings size={18} />
+                </button>
+              )}
+            </div>
           </>}
       </div>
       {team.players.length > 0 ? <div className="space-y-2 mb-4">
-          {team.players.map(player => <Player key={player.id} player={player} gameActive={gameActive} onUpdateScore={points => onUpdateScore(player.id, points)} onRemove={() => onRemovePlayer(player.id)} />)}
+          {team.players.map(player => <Player 
+            key={player.id} 
+            player={player} 
+            gameActive={gameActive} 
+            onUpdateScore={points => onUpdateScore(player.id, points)} 
+            onRemove={() => onRemovePlayer(player.id)} 
+            isEditMode={isEditMode}
+          />)}
         </div> : <div className="text-center py-4 text-gray-500">
           No players added yet
         </div>}
-      <form onSubmit={handleAddPlayer} className="mt-4">
-        <div className="flex flex-col space-y-2">
-          <label htmlFor={`add-player-${team.id}`} className="sr-only">Add player name</label>
-          <input 
-            type="text" 
-            id={`add-player-${team.id}`}
-            name={`add-player-${team.id}`}
-            placeholder="Add player..." 
-            value={newPlayerName} 
-            onChange={e => setNewPlayerName(e.target.value)} 
-            className="w-full border rounded px-3 py-2 text-sm" 
-            disabled={gameActive} 
-          />
-          <button type="submit" className="w-full bg-gray-800 text-white px-4 py-2 rounded text-sm disabled:bg-gray-400" disabled={gameActive || !newPlayerName.trim()}>
-            Add Player
-          </button>
-        </div>
-      </form>
+      {!gameActive && isEditMode && (
+        <form onSubmit={handleAddPlayer} className="mt-4">
+          <div className="flex flex-col space-y-2">
+            <label htmlFor={`add-player-${team.id}`} className="sr-only">Add player name</label>
+            <input 
+              type="text" 
+              id={`add-player-${team.id}`}
+              name={`add-player-${team.id}`}
+              placeholder="Add player..." 
+              value={newPlayerName} 
+              onChange={e => setNewPlayerName(e.target.value)} 
+              className="w-full border rounded px-3 py-2 text-sm" 
+            />
+            <button type="submit" className="w-full bg-gray-800 text-white px-4 py-2 rounded text-sm disabled:bg-gray-400" disabled={!newPlayerName.trim()}>
+              Add Player
+            </button>
+          </div>
+        </form>
+      )}
     </div>;
 };
