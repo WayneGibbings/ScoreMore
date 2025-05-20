@@ -34,11 +34,10 @@ export const Player: React.FC<PlayerProps> = ({
           >
             <MinusIcon size={16} />
           </button>
-        )}
-            <span className="w-8 text-center font-bold">{player.score}</span>
+        )}            <span className="w-8 text-center font-bold">{player.score}</span>
             {/* Always show goal button with hockey emoji */}        <button 
           onClick={() => onUpdateScore(1)} 
-          disabled={!gameActive && isEditMode === false} 
+          disabled={false} 
           className="px-2 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
           title="Add goal"
         >
