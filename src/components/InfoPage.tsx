@@ -36,9 +36,10 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-lg font-semibold mb-2">Setting Up Teams</h3>
             <ol className="list-decimal pl-5 space-y-2">
-              <li>Enter team names in the provided fields at the top of each team box.</li>
-              <li>Select a color for each team from the dropdown menu.</li>
-              <li>Add players to each team by typing their names in the "Add Player" field and pressing Enter.</li>
+              <li>Click the edit (pencil) icon on a team to enter edit mode.</li> 
+              <li>In edit mode, you can update the team name and select a color from the dropdown menu.</li>
+              <li>Add players by typing their names in the "Add player" field and clicking "Add Player".</li>
+              <li>Click the checkmark icon to save your changes and exit edit mode.</li>
               <li>You must add at least one player to each team before starting the game.</li>
             </ol>
           </section>
@@ -55,10 +56,26 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-lg font-semibold mb-2">Scoring</h3>
             <ul className="list-disc pl-5 space-y-2">
-              <li>During an active game, use the "+" button next to a player's name to add a point.</li>
-              <li>Use the "-" button to subtract a point if needed.</li>
+              <li>Use the hockey and goal emojis (🏑🥅) next to a player's name to add a point at any time.</li>
+              <li>The "-" button to remove points is only available during an active game or in edit mode.</li>
+              <li>To remove players or make corrections outside of a game, enter edit mode by clicking the edit icon.</li>
               <li>The scoreboard at the top automatically updates as points are added or removed.</li>
-              <li>The scoring log on the right side shows a chronological record of all scoring events.</li>
+              <li>The scoring log shows a chronological record of all scoring events.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Edit Mode</h3>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>Edit mode is indicated by a blue outline around the team card and a checkmark icon.</li>
+              <li>While in edit mode, you can:</li>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Change team name and color</li>
+                <li>Add new players</li>
+                <li>Remove existing players (trash icon)</li>
+                <li>Correct scores (add or remove points)</li>
+              </ul>
+              <li>Click the checkmark icon to save changes and exit edit mode.</li>
             </ul>
           </section>
 
@@ -81,7 +98,7 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
             <ul className="list-disc pl-5 space-y-2">
               <li>Your data will persist between sessions on the same device and browser.</li>
               <li>Clearing your browser data will also clear your game history.</li>
-              <li>Your data is not synced between devices (yet!).</li>
+              <li>Your data is not synced between devices.</li>
             </ul>
           </section>
 
