@@ -29,8 +29,17 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SCOREMORE_E9DE6 }}
           projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-      - name: Add preview URL to Action Summary
-        if: steps.deploy_preview.outputs.preview_url # Only run if preview_url is set
+      - name: Add preview URL to Job Summary
+        if: steps.deploy_preview.outputs.deploy_url # Only run if preview_url is set
         run: |
-          echo "## Firebase Preview URL" >> $GITHUB_STEP_SUMMARY
-          echo "${{ steps.deploy_preview.outputs.preview_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "# 🚀 Firebase Preview Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Preview URL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Open Preview Site](${{ steps.deploy_preview.outputs.deploy_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "This preview was deployed from PR #${{ github.event.pull_request.number }} - ${{ github.event.pull_request.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Deploy time: $(date)" >> $GITHUB_STEP_SUMMARY
