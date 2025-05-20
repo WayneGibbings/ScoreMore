@@ -42,14 +42,16 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
               <li>Click the checkmark icon to save your changes and exit edit mode.</li>
               <li>You must add at least one player to each team before starting the game.</li>
             </ol>
-          </section>
-
-          <section>
+          </section>          <section>
             <h3 className="text-lg font-semibold mb-2">Game Controls</h3>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong>Start Game:</strong> Click the "Start Game" button once your teams are ready.</li>
-              <li><strong>Halftime:</strong> Toggle halftime by clicking the "Halftime" button.</li>
-              <li><strong>End Game:</strong> Click "End Game" to finish the current game and record it in the history.</li>
+              <li>The game control button changes based on the current game state, progressing through these states:</li>
+              <ol className="list-decimal pl-5 mt-2 space-y-1">
+                <li><strong>Start Game:</strong> Click to begin a new game when your teams are ready.</li>
+                <li><strong>Half Time:</strong> Click to pause the game at halftime.</li>
+                <li><strong>Resume Game:</strong> Click to continue playing after halftime.</li>
+                <li><strong>End Game:</strong> Click to finish the current game and record it in the history.</li>
+              </ol>
             </ul>
           </section>
 

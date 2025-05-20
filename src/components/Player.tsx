@@ -34,12 +34,11 @@ export const Player: React.FC<PlayerProps> = ({
           >
             <MinusIcon size={16} />
           </button>
-        )}            <span className="w-8 text-center font-bold">{player.score}</span>
-            {/* Always show goal button with hockey emoji */}        <button 
+        )}            <span className="w-8 text-center font-bold">{player.score}</span>            {/* Show goal button with hockey emoji, but disable it when game is not active */}        <button 
           onClick={() => onUpdateScore(1)} 
-          disabled={false} 
+          disabled={!gameActive} 
           className="px-2 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-          title="Add goal"
+          title={gameActive ? "Add goal" : "Game must be active to score"}
         >
           <span role="img" aria-label="Add goal" className="flex items-center space-x-1">
             <span>🏑</span><span>🥅</span>

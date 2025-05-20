@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PlayIcon, StopCircleIcon, HourglassIcon } from 'lucide-react';
+
 interface GameControlsProps {
   gameActive: boolean;
   startGame: () => void;
@@ -8,6 +9,7 @@ interface GameControlsProps {
   onHalftime: () => void;
   disableStart: boolean;
 }
+
 export const GameControls: React.FC<GameControlsProps> = ({
   gameActive,
   startGame,
@@ -15,8 +17,101 @@ export const GameControls: React.FC<GameControlsProps> = ({
   isHalftime,
   onHalftime,
   disableStart
-}) => {
-  return <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+}) => {  // Track the sequence of the game control button
+  const [buttonPhase, setButtonPhase] = useState<number>(0);
+  // Sync button phase with game state when component mounts or game state changes externally
+  useEffect(() => {
+    if (!gameActive) {
+      // When game is not active, button should be "Start Game"
+      setButtonPhase(0);
+    } else if (gameActive && isHalftime && buttonPhase !== 3) {
+      // When in halftime, button should be "Resume Game" - but only if we're not already in the "End Game" phase
+      setButtonPhase(2);
+    } else if (gameActive && !isHalftime && buttonPhase !== 3) {
+      // When game is active but not in halftime, button should be "Half Time" - but only if we're not already in the "End Game" phase
+      setButtonPhase(1);
+    }
+    // We preserve buttonPhase === 3 (End Game) state to avoid going back to Half Time
+  }, [gameActive, isHalftime, buttonPhase]);
+  // Handle the sequential button click
+  const handleGameControlClick = () => {
+    console.log(`Button click - Current phase: ${buttonPhase}, Game active: ${gameActive}, Is halftime: ${isHalftime}`);
+    
+    if (buttonPhase === 0) {
+      // Phase 0: Start Game
+      console.log("Starting game...");
+      startGame();
+      setButtonPhase(1);    } else if (buttonPhase === 1) {
+      // Phase 1: Half Time
+      console.log("Going to halftime...");
+      onHalftime();
+      setButtonPhase(2);
+    } else if (buttonPhase === 2) {
+      // Phase 2: Resume Game - we're coming out of halftime
+      console.log("Resuming game after halftime...");
+      onHalftime(); // Toggle halftime state
+      setButtonPhase(3);
+    } else if (buttonPhase === 3) {
+      // Phase 3: End Game
+      console.log("Ending game...");
+      endGame();
+      setButtonPhase(0);
+    }
+  };
+
+  // Determine the button properties based on button phase
+  const getButtonProps = () => {
+    switch (buttonPhase) {
+      case 0:
+        // Start Game
+        return {
+          className: "flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400",
+          disabled: disableStart,
+          title: disableStart ? 'Add players to both teams first' : 'Start new game',
+          icon: <PlayIcon size={18} className="mr-2" />,
+          text: "Start Game"
+        };
+      case 1:
+        // Half Time
+        return {
+          className: "flex items-center bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700",
+          disabled: false,
+          title: "Pause the game for halftime",
+          icon: <HourglassIcon size={18} className="mr-2" />,
+          text: "Half Time"
+        };
+      case 2:
+        // Resume Game
+        return {
+          className: "flex items-center bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600",
+          disabled: false,
+          title: "Resume the game after halftime",
+          icon: <HourglassIcon size={18} className="mr-2" />,
+          text: "Resume Game"
+        };
+      case 3:
+        // End Game
+        return {
+          className: "flex items-center bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700",
+          disabled: false,
+          title: "End the current game",
+          icon: <StopCircleIcon size={18} className="mr-2" />,
+          text: "End Game"
+        };
+      default:
+        return {
+          className: "flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400",
+          disabled: disableStart,
+          title: "Start new game",
+          icon: <PlayIcon size={18} className="mr-2" />,
+          text: "Start Game"
+        };
+    }
+  };
+
+  const buttonProps = getButtonProps();
+  return (
+    <div className="bg-white rounded-lg shadow-md p-4 mb-6">
       <div className="flex flex-col sm:flex-row justify-between items-center sm:space-y-0 space-y-4">
         <div className="text-lg font-medium">
           Game Status:{' '}
@@ -24,19 +119,19 @@ export const GameControls: React.FC<GameControlsProps> = ({
             {!gameActive ? 'Not Started' : isHalftime ? 'Half Time' : 'In Progress'}
           </span>
         </div>
-        <div className="flex gap-2">
-          {gameActive && <button onClick={onHalftime} className={`flex items-center px-4 py-2 rounded ${isHalftime ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-yellow-600 hover:bg-yellow-700'} text-white`}>
-              <HourglassIcon size={18} className="mr-2" />
-              {isHalftime ? 'Resume Game' : 'Half Time'}
-            </button>}
-          {gameActive ? <button onClick={endGame} className="flex items-center bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
-              <StopCircleIcon size={18} className="mr-2" />
-              End Game
-            </button> : <button onClick={startGame} className="flex items-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:bg-gray-400" disabled={disableStart} title={disableStart ? 'Add players to both teams first' : 'Start new game'}>
-              <PlayIcon size={18} className="mr-2" />
-              Start Game
-            </button>}
+        <div>
+          {/* Single game control button with sequential states */}
+          <button 
+            onClick={handleGameControlClick}
+            className={buttonProps.className}
+            disabled={buttonProps.disabled}
+            title={buttonProps.title}
+          >
+            {buttonProps.icon}
+            {buttonProps.text}
+          </button>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };

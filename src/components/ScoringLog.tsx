@@ -76,8 +76,7 @@ export const ScoringLog: React.FC<ScoringLogProps> = ({
             No entries yet
           </div> : <div className="space-y-2">
             {entries.map(entry => (
-              <div key={entry.id} className="flex items-start space-x-2 p-2 border-b last:border-b-0">
-                {/* Different icons for different entry types */}
+              <div key={entry.id} className="flex items-start space-x-2 p-2 border-b last:border-b-0">                {/* Different icons for different entry types */}
                 {entry.type === 'note' ? (
                   <StickyNoteIcon size={16} className="text-blue-400 mt-1" />
                 ) : (
@@ -85,11 +84,17 @@ export const ScoringLog: React.FC<ScoringLogProps> = ({
                 )}
                 
                 <div className="flex-1">
-                  <div className="text-sm text-gray-500">{entry.timestamp}</div>
-                  
+                  <div className="text-sm text-gray-500">{entry.timestamp}</div>                  
                   {/* Display based on entry type */}
                   {entry.type === 'halftime' ? (
-                    <div className="font-medium text-yellow-600">Half Time</div>
+                    <div className={`font-medium ${
+                      entry.content?.includes('Game Started') ? 'text-green-600' : 
+                      entry.content?.includes('Game Ended') ? 'text-red-600' :
+                      entry.content?.includes('Second half') ? 'text-blue-600' : 
+                      'text-yellow-600'
+                    }`}>
+                      {entry.content || 'Half Time'}
+                    </div>
                   ) : entry.type === 'note' ? (
                     editingNoteId === entry.id ? (
                       <form onSubmit={handleEditNote} className="mt-1">

@@ -168,10 +168,22 @@ export function App() {
     setTeams(resetTeams);
     setGameActive(true);
     setIsHalftime(false);
-    setCurrentHalf(1); // Renamed from setCurrentInning
-    setGameStatus('in_progress');
+    setCurrentHalf(1); // Renamed from setCurrentInning    setGameStatus('in_progress');
     await clearUnassociatedScoreLog(); // Clear logs from any previous unfinished game
-    setScoringLog([]); // Clear UI log
+    
+    // Create a log entry for game start
+    const gameStartLogEntry: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()),
+      teamName: '',
+      playerName: '',
+      points: 0,
+      type: 'halftime', // Reusing halftime type for game state changes
+      content: 'Game Started' // Clear indication that game has started
+    };
+    
+    await addLogEntryToDb(gameStartLogEntry);
+    setScoringLog([gameStartLogEntry]); // Start with fresh log including the game start entry
   };
 
   const endGame = async () => {
@@ -186,7 +198,20 @@ export function App() {
     const logIdsToAssociate = scoringLog.map(log => log.id);
     if (logIdsToAssociate.length > 0) {
       await associateScoreLogToGameHistory(logIdsToAssociate, gameResult.id);
-    }
+    }    // Add game ended log entry
+    const gameEndedLogEntry: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()),
+      teamName: '',
+      playerName: '',
+      points: 0,
+      type: 'halftime', // Reusing halftime type for game state changes
+      content: `Game Ended - ${winner === 'Draw' ? 'Draw' : `${winner} wins`}!` // Include the winner info in the log
+    };
+    
+    await addLogEntryToDb(gameEndedLogEntry);
+    setScoringLog(prevLog => [gameEndedLogEntry, ...prevLog]);
+    
     setGameHistory([gameResult, ...gameHistory]);
     setGameActive(false);
     setGameStatus('final');
@@ -209,12 +234,18 @@ export function App() {
       return team;
     }));
   };
-
   const updatePlayerScore = async (teamId: string, playerId: string, points: number) => {
+    // Prevent score updates if game is not active or during halftime
+    if (!gameActive) {
+      console.log("Cannot update score when game is not active.");
+      return;
+    }
+    
     if (isHalftime) {
       console.log("Cannot update score during halftime.");
       return;
     }
+    
     const team = teams.find(t => t.id === teamId);
     const player = team?.players.find(p => p.id === playerId);
     if (team && player) {
@@ -272,18 +303,21 @@ export function App() {
       return team;
     }));
   };
-
   const toggleHalftime = async () => {
     const newHalftimeState = !isHalftime;
     setIsHalftime(newHalftimeState);
+    
+    // Create a more descriptive log entry that shows whether we're entering or exiting halftime
     const logEntry: LogEntry = {
       id: Date.now().toString(),
-      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()), // Changed to include time
+      timestamp: formatDateTimeYYYYMMDDHHMMSS(new Date()),
       teamName: '',
       playerName: '',
       points: 0,
-      type: 'halftime'
+      type: 'halftime',
+      content: newHalftimeState ? 'Halftime started' : 'Second half started' // Add context to the log entry
     };
+    
     await addLogEntryToDb(logEntry);
     setScoringLog(prevLog => [logEntry, ...prevLog]);
     setGameStatus(newHalftimeState ? 'halftime' : 'in_progress');
