@@ -28,15 +28,14 @@ jobs:
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SCOREMORE_E9DE6 }}
-          projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-      - name: Add preview URL to Job Summary
-        if: steps.deploy_preview.outputs.deploy_url # Only run if preview_url is set
+          projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}      - name: Add preview URL to Job Summary
+        if: steps.deploy_preview.outputs.details_url # Only run if details_url is set
         run: |
           echo "# 🚀 Firebase Preview Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### ✅ Preview URL" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 [Open Preview Site](${{ steps.deploy_preview.outputs.deploy_url }})" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [Open Preview Site](${{ steps.deploy_preview.outputs.details_url }})" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "---" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
