@@ -17,7 +17,7 @@ export const Player: React.FC<PlayerProps> = ({
   isEditMode,
   onToggleActive
 }) => {
-  return <div className="flex items-center justify-between bg-gray-50 p-2 rounded">      <div className="flex items-center space-x-2">
+  return <div className="flex items-center justify-between bg-gray-50 p-2 rounded">      <div className="flex items-center space-x-2 flex-1 min-w-0">
         {isEditMode && (
           <>
             <button onClick={() => onRemove()} className="text-gray-400 hover:text-red-500" title="Remove player">
@@ -25,19 +25,18 @@ export const Player: React.FC<PlayerProps> = ({
             </button>            {onToggleActive && (
               <button 
                 onClick={() => onToggleActive(!player.active)} 
-                className={`${player.active ? "text-green-600 bg-green-100" : "text-gray-500 bg-gray-100"} hover:opacity-90 px-2 py-1 rounded flex items-center`}
+                className={`${player.active ? "text-green-600 bg-green-100" : "text-gray-500 bg-gray-100"} hover:opacity-90 p-1 rounded flex-shrink-0`}
                 title={player.active ? "Set inactive" : "Set active"}
               >
                 {player.active ? 
-                  <ToggleRight size={18} className="mr-1" /> : 
-                  <ToggleLeft size={18} className="mr-1" />
+                  <ToggleRight size={18} /> : 
+                  <ToggleLeft size={18} />
                 }
-                <span className="text-xs">{player.active ? "Active" : "Inactive"}</span>
               </button>
             )}
           </>
         )}
-        <span className={!player.active && isEditMode ? "text-gray-400 italic" : ""}>{player.name}</span>      </div><div className="flex items-center space-x-2">
+        <span className={`${!player.active && isEditMode ? "text-gray-400 italic" : ""} truncate flex-1`}>{player.name}</span>      </div><div className="flex items-center space-x-2 flex-shrink-0">
         {/* In edit mode, show an empty space for visual balance on the left */}
         {isEditMode && (
           <div className="w-8 h-8"></div>
