@@ -47,17 +47,30 @@ export const Player: React.FC<PlayerProps> = ({
             title="Remove goal"
           >
             <MinusIcon size={16} />
+          </button>        )}            <span className="w-8 text-center font-bold">{player.score}</span>            {/* Show goal button only when game is active and not in edit mode */}
+        {!isEditMode && (
+          <button 
+            onClick={() => onUpdateScore(1)} 
+            disabled={!gameActive} 
+            className="px-2 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+            title={gameActive ? "Add goal" : "Game must be active to score"}
+          >
+            <span role="img" aria-label="Add goal" className="flex items-center space-x-1">
+              <span>🏑</span><span>🥅</span>
+            </span>
           </button>
-        )}            <span className="w-8 text-center font-bold">{player.score}</span>            {/* Show goal button with hockey emoji, but disable it when game is not active */}        <button 
-          onClick={() => onUpdateScore(1)} 
-          disabled={!gameActive} 
-          className="px-2 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-          title={gameActive ? "Add goal" : "Game must be active to score"}
-        >
-          <span role="img" aria-label="Add goal" className="flex items-center space-x-1">
-            <span>🏑</span><span>🥅</span>
-          </span>
-        </button>
+        )}
+        {/* In edit mode, replace the add goal button with another remove goal button for balance */}
+        {isEditMode && (
+          <button 
+            onClick={() => onUpdateScore(-1)} 
+            disabled={player.score <= 0} 
+            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+            title="Remove goal"
+          >
+            <MinusIcon size={16} />
+          </button>
+        )}
       </div>
     </div>;
 };

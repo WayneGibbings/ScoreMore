@@ -176,9 +176,8 @@ export const Team: React.FC<TeamProps> = ({
               onRemove={() => onRemovePlayer(player.id)} 
               onToggleActive={(active) => onTogglePlayerActive(player.id, active)}
               isEditMode={isEditMode}
-            />)}
-        </div> : <div className="text-center py-4 text-gray-500">
-          No players added yet
+            />)}        </div> : <div className="text-center py-4 text-gray-500">
+          To add players, click the Edit button
         </div>}{isEditMode && (
         <form onSubmit={handleAddPlayer} className="mt-4">
           <div className="flex flex-col space-y-2">
