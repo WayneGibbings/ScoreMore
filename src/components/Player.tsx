@@ -40,17 +40,18 @@ export const Player: React.FC<PlayerProps> = ({
         {/* In edit mode, show an empty space for visual balance on the left */}
         {isEditMode && (
           <div className="w-8 h-8"></div>
+        )}        <span className="w-8 text-center font-bold">{player.score}</span>
+        {/* Show minus button only in edit mode */}
+        {isEditMode && (
+          <button 
+            onClick={() => onUpdateScore(-1)} 
+            disabled={player.score <= 0} 
+            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+            title="Remove goal"
+          >
+            <MinusIcon size={16} />
+          </button>
         )}
-        <span className="w-8 text-center font-bold">{player.score}</span>
-        {/* Show minus button on the right of the score */}
-        <button 
-          onClick={() => onUpdateScore(-1)} 
-          disabled={player.score <= 0 || (!isEditMode && !gameActive)} 
-          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-          title="Remove goal"
-        >
-          <MinusIcon size={16} />
-        </button>
         {/* Show goal button only when game is active and not in edit mode */}
         {!isEditMode && (
           <button 

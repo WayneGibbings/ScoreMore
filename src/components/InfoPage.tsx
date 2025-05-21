@@ -53,16 +53,40 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
                 <li><strong>End Game:</strong> Click to finish the current game and record it in the history.</li>
               </ol>
             </ul>
-          </section>
-
-          <section>
+          </section>          <section>
             <h3 className="text-lg font-semibold mb-2">Scoring</h3>
-            <ul className="list-disc pl-5 space-y-2">              <li>Use the hockey and goal emojis (🏑🥅) next to a player's name to add a point during an active game.</li>
-              <li>The "-" button to remove points is available during an active game or in edit mode.</li>
-              <li>To add or remove players at any time, enter edit mode by clicking the edit icon.</li>
-              <li>The scoreboard at the top automatically updates as points are added or removed.</li>
-              <li>The scoring log shows a chronological record of all scoring events.</li>
-            </ul>
+            <p className="mb-2">
+              ScoreMore provides different scoring controls depending on whether you're in active game mode or edit mode.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium">During Active Game:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Use the hockey and goal emojis (🏑🥅) next to each player's name to add a point.</li>
+                  <li>Only active players are displayed and can receive points.</li>
+                  <li>Points are immediately added to both the player's score and the team total.</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium">In Edit Mode:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>The minus (-) button appears next to each player to allow removing points if needed.</li>
+                  <li>You can add or remove players during edit mode.</li>
+                  <li>You can toggle players between active and inactive status.</li>
+                  <li>All players (active and inactive) are visible in edit mode.</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-medium">Scoreboard and Logging:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>The scoreboard at the top automatically updates as points are added or removed.</li>
+                  <li>The scoring log shows a chronological record of all scoring events.</li>
+                  <li>Team totals are automatically calculated from individual player scores.</li>
+                </ul>
+              </div>
+            </div>
           </section>
 
           <section>
@@ -74,7 +98,7 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
                 <li>Add new players (useful for late arrivals)</li>
                 <li>Remove existing players (trash icon)</li>
                 <li>Set players as active or inactive (toggle button)</li>
-                <li>Correct scores (add or remove points)</li>
+                <li>Correct scores by adding or removing points (the minus button only appears in edit mode)</li>
               </ul>
               <li>Click the checkmark icon to save changes and exit edit mode.</li>
               <li><strong>Note:</strong> Starting a game will automatically save changes and exit edit mode for all teams.</li>
