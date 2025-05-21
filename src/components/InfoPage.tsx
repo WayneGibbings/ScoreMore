@@ -69,11 +69,11 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
             <h3 className="text-lg font-semibold mb-2">Edit Mode</h3>
             <ul className="list-disc pl-5 space-y-2">              <li>Edit mode is indicated by a blue outline around the team card and a checkmark icon.</li>
               <li>You can enter edit mode at any time, even during an active game.</li>
-              <li>While in edit mode, you can:</li>
-              <ul className="list-disc pl-5 space-y-1">
+              <li>While in edit mode, you can:</li>              <ul className="list-disc pl-5 space-y-1">
                 <li>Change team name and color</li>
                 <li>Add new players (useful for late arrivals)</li>
                 <li>Remove existing players (trash icon)</li>
+                <li>Set players as active or inactive (toggle button)</li>
                 <li>Correct scores (add or remove points)</li>
               </ul>
               <li>Click the checkmark icon to save changes and exit edit mode.</li>
@@ -105,6 +105,18 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
               <li>Notes appear with a note icon in the scoring log.</li>
               <li>You can edit or delete notes during the active game by hovering over them and using the edit or delete buttons.</li>
               <li>Notes are saved with the game and will appear in the game history.</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Player Active Status</h3>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>Each player can be set as active or inactive using the toggle button in edit mode.</li>
+              <li>Only active players are shown on the team when not in edit mode.</li>
+              <li>All players (active and inactive) are visible when in edit mode.</li>
+              <li>Game summaries only include active players.</li>
+              <li>New players are automatically set to active when added.</li>
+              <li>Use this feature to manage large teams or substitute players without deleting them.</li>
             </ul>
           </section>
 
