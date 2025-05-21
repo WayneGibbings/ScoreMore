@@ -70,10 +70,9 @@ export const ScoringLog: React.FC<ScoringLogProps> = ({
           </div>
         </form>
       )}
-      
-      <div className="h-[350px] overflow-y-auto">
+        <div className="h-[350px] overflow-y-auto">
         {entries.length === 0 ? <div className="text-center text-gray-500 py-4">
-            No entries yet
+            {gameActive ? "No entries yet" : "Start Game to begin scoring"}
           </div> : <div className="space-y-2">
             {entries.map(entry => (
               <div key={entry.id} className="flex items-start space-x-2 p-2 border-b last:border-b-0">                {/* Different icons for different entry types */}

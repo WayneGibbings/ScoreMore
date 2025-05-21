@@ -6,7 +6,7 @@ ScoreMore is a web-based application for tracking scores in sports games. It all
 
 *   **Team Management:** Create and name up to two teams with custom colors.
 *   **Team Colors:** Select from a variety of colors for teams, displayed in both the team panel and scoreboard.
-*   **Player Management:** Add players to each team.
+*   **Player Management:** Add players to each team with active/inactive status control.
 *   **Score Tracking:** Increment or decrement player scores.
 *   **Game State:** Start, end, and manage halftime for games.
 *   **Game Halves:** Tracks "First Half" and "Second Half" of a game.
@@ -150,6 +150,29 @@ README.md               # This file
 *   A trash icon button allows deletion of individual games from history.
 *   Clicking the delete button triggers a confirmation dialog to prevent accidental deletions.
 *   When a game is deleted, all associated scoring logs are also removed from the database.
+
+### Player Active Status
+
+*   Each player has an active/inactive toggle available in team edit mode.
+*   The toggle is represented by a visual indicator that clearly shows the current status.
+*   Only active players are displayed when not in edit mode, while edit mode shows all players.
+*   Game summaries only include active players when shared or viewed in history.
+*   This feature allows coaches to:
+    *   Manage larger team rosters by temporarily deactivating benched players
+    *   Keep substitutes in the roster without cluttering the active game view
+    *   Maintain player history while focusing on current lineup
+*   All players are set to active by default when added to a team.
+*   This feature works seamlessly with existing game history.
+
+### Team Edit Mode
+
+*   Teams can be edited before, during, or after a game using the edit mode.
+*   When in edit mode, a blue outline appears around the team panel.
+*   All pending changes are automatically saved when:
+    *   Clicking the checkmark icon to exit edit mode manually
+    *   Starting a game with the "Start Game" button while in edit mode
+*   This ensures a smooth transition from setup to gameplay without losing any changes.
+*   Edit mode allows changing team names and colors, adding/removing players, toggling player active status, and correcting scores.
 
 ## Notes on Data Persistence
 
