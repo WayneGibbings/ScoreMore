@@ -1,28 +1,43 @@
 import React from 'react';
 import { Player as PlayerType } from '../App';
-import { MinusIcon, TrashIcon } from 'lucide-react';
+import { MinusIcon, TrashIcon, ToggleLeft, ToggleRight } from 'lucide-react';
 interface PlayerProps {
   player: PlayerType;
   gameActive: boolean;
   onUpdateScore: (points: number) => void;
   onRemove: () => void;
   isEditMode: boolean;
+  onToggleActive?: (active: boolean) => void;
 }
 export const Player: React.FC<PlayerProps> = ({
   player,
   gameActive,
   onUpdateScore,
   onRemove,
-  isEditMode
+  isEditMode,
+  onToggleActive
 }) => {
   return <div className="flex items-center justify-between bg-gray-50 p-2 rounded">      <div className="flex items-center space-x-2">
         {isEditMode && (
-          <button onClick={() => onRemove()} className="text-gray-400 hover:text-red-500" title="Remove player">
-            <TrashIcon size={16} />
-          </button>
+          <>
+            <button onClick={() => onRemove()} className="text-gray-400 hover:text-red-500" title="Remove player">
+              <TrashIcon size={16} />
+            </button>            {onToggleActive && (
+              <button 
+                onClick={() => onToggleActive(!player.active)} 
+                className={`${player.active ? "text-green-600 bg-green-100" : "text-gray-500 bg-gray-100"} hover:opacity-90 p-1 rounded`}
+                title={player.active ? "Set inactive" : "Set active"}
+              >
+                {player.active ? 
+                  <ToggleRight size={16} /> : 
+                  <ToggleLeft size={16} />
+                }
+              </button>
+            )}
+          </>
         )}
-        <span>{player.name}</span>
-      </div>      <div className="flex items-center space-x-2">
+        <span className={!player.active && isEditMode ? "text-gray-400 italic" : ""}>{player.name}</span>
+      </div><div className="flex items-center space-x-2">
         {/* Show minus button only when in edit mode or when game is active */}
         {(isEditMode || gameActive) && (
           <button 

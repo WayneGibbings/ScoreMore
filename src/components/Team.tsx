@@ -91,6 +91,7 @@ interface TeamProps {
   onUpdateScore: (playerId: string, points: number) => void;
   onRemovePlayer: (playerId: string) => void;
   onUpdateTeamName: (name: string, color: string) => void;
+  onTogglePlayerActive: (playerId: string, active: boolean) => void;
 }
 export const Team: React.FC<TeamProps> = ({
   team,
@@ -98,7 +99,8 @@ export const Team: React.FC<TeamProps> = ({
   onAddPlayer,
   onUpdateScore,
   onRemovePlayer,
-  onUpdateTeamName
+  onUpdateTeamName,
+  onTogglePlayerActive
 }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -162,19 +164,22 @@ export const Team: React.FC<TeamProps> = ({
         >
           {isEditMode ? <Check size={18} /> : <Edit size={18} />}
         </button>
-      </div>
-      {team.players.length > 0 ? <div className="space-y-2 mb-4">
-          {team.players.map(player => <Player 
-            key={player.id} 
-            player={player} 
-            gameActive={gameActive} 
-            onUpdateScore={points => onUpdateScore(player.id, points)} 
-            onRemove={() => onRemovePlayer(player.id)} 
-            isEditMode={isEditMode}
-          />)}
+      </div>      {team.players.length > 0 ? <div className="space-y-2 mb-4">
+          {team.players
+            // Filter to show only active players when not in edit mode
+            .filter(player => isEditMode || player.active)
+            .map(player => <Player 
+              key={player.id} 
+              player={player} 
+              gameActive={gameActive} 
+              onUpdateScore={points => onUpdateScore(player.id, points)} 
+              onRemove={() => onRemovePlayer(player.id)} 
+              onToggleActive={(active) => onTogglePlayerActive(player.id, active)}
+              isEditMode={isEditMode}
+            />)}
         </div> : <div className="text-center py-4 text-gray-500">
           No players added yet
-        </div>}      {isEditMode && (
+        </div>}{isEditMode && (
         <form onSubmit={handleAddPlayer} className="mt-4">
           <div className="flex flex-col space-y-2">
             <label htmlFor={`add-player-${team.id}`} className="sr-only">Add player name</label>

@@ -24,6 +24,7 @@ export type Player = {
   id: string;
   name: string;
   score: number;
+  active: boolean; // New property to track if player is active
 };
 export type TeamData = {
   id: string;
@@ -129,6 +130,29 @@ export function App() {
     loadState();
   }, []); // Empty dependency array means this runs once on mount
 
+  // Ensure all players have active property (for backward compatibility)
+  useEffect(() => {
+    if (isLoading) return; // Don't process while loading
+    
+    // Check if any player is missing the active property
+    const needsUpdate = teams.some(team => 
+      team.players.some(player => player.active === undefined)
+    );
+    
+    if (needsUpdate) {
+      // Update all players to have active=true by default
+      const updatedTeams = teams.map(team => ({
+        ...team,
+        players: team.players.map(player => ({
+          ...player,
+          active: player.active !== undefined ? player.active : true
+        }))
+      }));
+      
+      setTeams(updatedTeams);
+    }
+  }, [teams, isLoading]);
+
   // Save game state to DB whenever it changes
   useEffect(() => {
     if (isLoading) return; // Don't save while initially loading
@@ -217,7 +241,6 @@ export function App() {
     setGameStatus('final');
     // scoringLog for the completed game is now associated, new game will start fresh or load unassociated logs
   };
-
   const addPlayer = (teamId: string, playerName: string) => {
     if (!playerName.trim()) return;
     setTeams(teams.map(team => {
@@ -227,7 +250,8 @@ export function App() {
           players: [...team.players, {
             id: Date.now().toString(),
             name: playerName,
-            score: 0
+            score: 0,
+            active: true // Set new players to active by default
           }]
         };
       }
@@ -454,6 +478,26 @@ export function App() {
     // In a future update, we could add proper deletion from the database
   };
 
+  const togglePlayerActive = (teamId: string, playerId: string, active: boolean) => {
+    setTeams(teams.map(team => {
+      if (team.id === teamId) {
+        return {
+          ...team,
+          players: team.players.map(player => {
+            if (player.id === playerId) {
+              return {
+                ...player,
+                active
+              };
+            }
+            return player;
+          })
+        };
+      }
+      return team;
+    }));
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center"><h1 className="text-3xl font-bold">Loading...</h1></div>;
   }
@@ -478,7 +522,7 @@ export function App() {
         </h1>
         <ScoreBoard teams={teams} isHalftime={isHalftime} />
         <GameControls gameActive={gameActive} startGame={startGame} endGame={endGame} isHalftime={isHalftime} onHalftime={toggleHalftime} disableStart={teams.some(team => team.players.length === 0)} />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} />)}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">          {teams.map(team => <Team key={team.id} team={team} gameActive={gameActive} onAddPlayer={name => addPlayer(team.id, name)} onUpdateScore={(playerId, points) => updatePlayerScore(team.id, playerId, points)} onRemovePlayer={playerId => removePlayer(team.id, playerId)} onUpdateTeamName={(name, color) => updateTeamName(team.id, name, color)} onTogglePlayerActive={(playerId, active) => togglePlayerActive(team.id, playerId, active)} />)}
           <ScoringLog 
             entries={scoringLog} 
             gameActive={gameActive} 

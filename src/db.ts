@@ -199,6 +199,15 @@ export async function loadGameHistory(): Promise<GameResult[]> {
         if (!Array.isArray(parsedTeams)) {
           parsedTeams = [];
         }
+        
+        // Ensure all players have active property set to true by default
+        parsedTeams = parsedTeams.map(team => ({
+          ...team,
+          players: team.players.map(player => ({
+            ...player,
+            active: player.active !== undefined ? player.active : true
+          }))
+        }));
       } else {
         parsedTeams = [];
       }
