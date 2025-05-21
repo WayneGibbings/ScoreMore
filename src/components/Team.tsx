@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
 import { Edit, Check, ChevronDown } from 'lucide-react'; // Added ChevronDown icon
@@ -106,16 +106,31 @@ export const Team: React.FC<TeamProps> = ({
   const [isEditMode, setIsEditMode] = useState(false);  const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
   
-  // Exit edit mode and save changes when game becomes active
+  // Track prev gameActive state to detect just game start
+  const [prevGameActive, setPrevGameActive] = useState(gameActive);
+  
+  // This effect handles the transition of game state
   useEffect(() => {
-    if (gameActive && isEditMode) {
-      // If in edit mode and game becomes active, save changes and exit edit mode
-      if (teamName !== team.name || teamColor !== team.color) {
-        onUpdateTeamName(teamName, teamColor);
+    // Only execute when gameActive changes, not on every render
+    if (gameActive !== prevGameActive) {
+      // Game is transitioning from inactive to active
+      if (gameActive && isEditMode) {
+        // If in edit mode when game starts, save changes and exit it
+        if (teamName !== team.name || teamColor !== team.color) {
+          onUpdateTeamName(teamName, teamColor);
+        }
+        setIsEditMode(false);
       }
-      setIsEditMode(false);
+      // Update the previous value for next comparison
+      setPrevGameActive(gameActive);
     }
-  }, [gameActive, isEditMode, teamName, teamColor, team.name, team.color, onUpdateTeamName]);
+  }, [gameActive, isEditMode, teamName, teamColor, team.name, team.color, onUpdateTeamName, prevGameActive]);
+  
+  // Update local state when team props change
+  useEffect(() => {
+    setTeamName(team.name);
+    setTeamColor(team.color);
+  }, [team.name, team.color]);
 
   const handleAddPlayer = (e: React.FormEvent) => {
     e.preventDefault();
