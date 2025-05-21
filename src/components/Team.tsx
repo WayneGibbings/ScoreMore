@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player } from './Player';
 import { TeamData } from '../App'; // Removed PlayerType import
 import { Edit, Check, ChevronDown } from 'lucide-react'; // Added ChevronDown icon
@@ -103,9 +103,19 @@ export const Team: React.FC<TeamProps> = ({
   onTogglePlayerActive
 }) => {
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [teamName, setTeamName] = useState(team.name);
+  const [isEditMode, setIsEditMode] = useState(false);  const [teamName, setTeamName] = useState(team.name);
   const [teamColor, setTeamColor] = useState(team.color);
+  
+  // Exit edit mode and save changes when game becomes active
+  useEffect(() => {
+    if (gameActive && isEditMode) {
+      // If in edit mode and game becomes active, save changes and exit edit mode
+      if (teamName !== team.name || teamColor !== team.color) {
+        onUpdateTeamName(teamName, teamColor);
+      }
+      setIsEditMode(false);
+    }
+  }, [gameActive, isEditMode, teamName, teamColor, team.name, team.color, onUpdateTeamName]);
 
   const handleAddPlayer = (e: React.FormEvent) => {
     e.preventDefault();

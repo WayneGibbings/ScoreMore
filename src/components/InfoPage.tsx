@@ -77,6 +77,7 @@ export const InfoPage: React.FC<InfoPageProps> = ({ isOpen, onClose }) => {
                 <li>Correct scores (add or remove points)</li>
               </ul>
               <li>Click the checkmark icon to save changes and exit edit mode.</li>
+              <li><strong>Note:</strong> Starting a game will automatically save changes and exit edit mode for all teams.</li>
             </ul>
           </section>
 

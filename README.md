@@ -164,6 +164,16 @@ README.md               # This file
 *   All players are set to active by default when added to a team.
 *   This feature works seamlessly with existing game history.
 
+### Team Edit Mode
+
+*   Teams can be edited before, during, or after a game using the edit mode.
+*   When in edit mode, a blue outline appears around the team panel.
+*   All pending changes are automatically saved when:
+    *   Clicking the checkmark icon to exit edit mode manually
+    *   Starting a game with the "Start Game" button while in edit mode
+*   This ensures a smooth transition from setup to gameplay without losing any changes.
+*   Edit mode allows changing team names and colors, adding/removing players, toggling player active status, and correcting scores.
+
 ## Notes on Data Persistence
 
 *   The application uses `sql.js` to create an in-memory SQLite database.
