@@ -25,29 +25,30 @@ export const Player: React.FC<PlayerProps> = ({
             </button>            {onToggleActive && (
               <button 
                 onClick={() => onToggleActive(!player.active)} 
-                className={`${player.active ? "text-green-600 bg-green-100" : "text-gray-500 bg-gray-100"} hover:opacity-90 p-1 rounded`}
+                className={`${player.active ? "text-green-600 bg-green-100" : "text-gray-500 bg-gray-100"} hover:opacity-90 px-2 py-1 rounded flex items-center`}
                 title={player.active ? "Set inactive" : "Set active"}
               >
                 {player.active ? 
-                  <ToggleRight size={16} /> : 
-                  <ToggleLeft size={16} />
+                  <ToggleRight size={18} className="mr-1" /> : 
+                  <ToggleLeft size={18} className="mr-1" />
                 }
+                <span className="text-xs">{player.active ? "Active" : "Inactive"}</span>
               </button>
             )}
           </>
         )}
-        <span className={!player.active && isEditMode ? "text-gray-400 italic" : ""}>{player.name}</span>
-      </div><div className="flex items-center space-x-2">
-        {/* Show minus button only when in edit mode or when game is active */}
-        {(isEditMode || gameActive) && (
-          <button 
-            onClick={() => onUpdateScore(-1)} 
-            disabled={player.score <= 0} 
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-            title="Remove goal"
-          >
-            <MinusIcon size={16} />
-          </button>        )}            <span className="w-8 text-center font-bold">{player.score}</span>            {/* Show goal button only when game is active and not in edit mode */}
+        <span className={!player.active && isEditMode ? "text-gray-400 italic" : ""}>{player.name}</span>      </div><div className="flex items-center space-x-2">
+        {/* Show minus button - Only one is needed regardless of mode */}
+        <button 
+          onClick={() => onUpdateScore(-1)} 
+          disabled={player.score <= 0 || (!isEditMode && !gameActive)} 
+          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
+          title="Remove goal"
+        >
+          <MinusIcon size={16} />
+        </button>
+        <span className="w-8 text-center font-bold">{player.score}</span>
+        {/* Show goal button only when game is active and not in edit mode */}
         {!isEditMode && (
           <button 
             onClick={() => onUpdateScore(1)} 
@@ -59,17 +60,9 @@ export const Player: React.FC<PlayerProps> = ({
               <span>🏑</span><span>🥅</span>
             </span>
           </button>
-        )}
-        {/* In edit mode, replace the add goal button with another remove goal button for balance */}
+        )}        {/* In edit mode, show an empty space for visual balance */}
         {isEditMode && (
-          <button 
-            onClick={() => onUpdateScore(-1)} 
-            disabled={player.score <= 0} 
-            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded-full disabled:opacity-50" 
-            title="Remove goal"
-          >
-            <MinusIcon size={16} />
-          </button>
+          <div className="w-8 h-8"></div>
         )}
       </div>
     </div>;
