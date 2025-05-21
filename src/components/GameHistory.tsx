@@ -532,10 +532,10 @@ export const GameHistory: React.FC<GameHistoryProps> = ({
                 <div className="grid grid-cols-2 gap-4">
                   {game.teams.map(team => (
                     <div key={team.id} className="border rounded p-3">
-                      <h3 className="font-medium">{team.name}</h3>
-                      <div className="mt-2 space-y-1">
-                        {/* Sort players alphabetically by name */}
+                      <h3 className="font-medium">{team.name}</h3>                      <div className="mt-2 space-y-1">
+                        {/* Sort and filter only active players alphabetically by name */}
                         {[...team.players]
+                          .filter(player => player.active) // Only include active players
                           .sort((a, b) => a.name.localeCompare(b.name))
                           .map(player => (
                             <div key={player.id} className="flex justify-between text-sm">
