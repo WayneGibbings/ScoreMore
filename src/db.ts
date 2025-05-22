@@ -114,10 +114,18 @@ export async function loadCurrentGameState(): Promise<CurrentGameState | null> {
           parsedTeams = [];
         }
 
-        // Ensure each team has a valid players array
+        // Ensure each team has a valid players array and each player has required properties
         parsedTeams = parsedTeams.map(team => ({
           ...team,
-          players: Array.isArray(team.players) ? team.players : [],
+          players: Array.isArray(team.players)
+            ? team.players.map(player => ({
+                ...player,
+                id: player.id ?? '',
+                name: player.name ?? '',
+                score: typeof player.score === 'number' ? player.score : 0,
+                active: player.active !== undefined ? player.active : true,
+              }))
+            : [],
         }));
       } else {
         parsedTeams = [];
