@@ -5,7 +5,9 @@ import { ScoreBoard } from './components/ScoreBoard';
 import { GameHistory } from './components/GameHistory';
 import { ScoringLog } from './components/ScoringLog';
 import { InfoPage } from './components/InfoPage';
-import { Mail, Info } from 'lucide-react'; // Import Mail and Info icons
+import { AboutPage, PrivacyPolicy, TermsOfService } from './components/legal';
+import { StorageConsentBanner } from './components/StorageConsentBanner';
+import { Mail, Info } from 'lucide-react'; // Import only icons we're using
 import {
   loadCurrentGameState,
   saveCurrentGameState,
@@ -94,11 +96,23 @@ export function App() {
   const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
   const [isInfoPageOpen, setIsInfoPageOpen] = useState(false); // State for info page modal
 
+  // States for legal pages
+  const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
+  const [isTermsOfServiceOpen, setIsTermsOfServiceOpen] = useState(false);
+  const [isAboutPageOpen, setIsAboutPageOpen] = useState(false);
+
   // Removed unused variable appVersionFromEnv
   const buildNumberFromEnv = import.meta.env.VITE_BUILD_NUMBER;
   const buildDisplayInfo = buildNumberFromEnv
     ? `${buildNumberFromEnv}`
     : `Dev Build: ${new Date().toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
+
+  // Handle storage consent
+  const handleStorageConsent = () => {
+    // Just store the consent in localStorage without updating state
+    // since we don't actually use the state value in the UI
+    localStorage.setItem('storageConsent', 'true');
+  };
 
   // Load initial state from DB
   useEffect(() => {
@@ -114,7 +128,7 @@ export function App() {
         // If no saved game state, ensure default teams are part of what we might save initially.
         // This helps if saveCurrentGameState is called before any user interaction.
         const initialGameState: CurrentGameState = {
-          teams: teams, // Use initial teams from useState
+          teams, // Use initial teams from useState
           gameActive: false,
           isHalftime: false,
           currentHalf: 1, // Renamed from currentInning
@@ -131,6 +145,7 @@ export function App() {
       setIsLoading(false);
     }
     loadState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array means this runs once on mount
 
   // Ensure all players have active property (for backward compatibility)
@@ -532,8 +547,17 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
-      {/* Info Page Modal - only rendered when open */}
+      {/* Legal and info modals */}
       <InfoPage isOpen={isInfoPageOpen} onClose={() => setIsInfoPageOpen(false)} />
+      <PrivacyPolicy isOpen={isPrivacyPolicyOpen} onClose={() => setIsPrivacyPolicyOpen(false)} />
+      <TermsOfService
+        isOpen={isTermsOfServiceOpen}
+        onClose={() => setIsTermsOfServiceOpen(false)}
+      />
+      <AboutPage isOpen={isAboutPageOpen} onClose={() => setIsAboutPageOpen(false)} />
+
+      {/* Local storage consent banner */}
+      <StorageConsentBanner onAccept={handleStorageConsent} />
 
       <div className="max-w-4xl mx-auto relative">
         {/* Info Button in top right */}{' '}
@@ -595,7 +619,7 @@ export function App() {
           />
         )}
         <footer className="mt-12 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-4">
             <div>
               <p>Build {buildDisplayInfo}</p>
             </div>
@@ -608,6 +632,29 @@ export function App() {
               Send Feedback
             </a>
           </div>
+
+          {/* Legal links */}
+          <div className="flex justify-center space-x-4 mb-4 flex-wrap">
+            <button
+              onClick={() => setIsAboutPageOpen(true)}
+              className="text-blue-600 hover:underline"
+            >
+              About
+            </button>
+            <button
+              onClick={() => setIsPrivacyPolicyOpen(true)}
+              className="text-blue-600 hover:underline"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => setIsTermsOfServiceOpen(true)}
+              className="text-blue-600 hover:underline"
+            >
+              Terms of Service
+            </button>
+          </div>
+
           <p className="mt-2">© {new Date().getFullYear()} hockeyscorer.app</p>
         </footer>
       </div>
