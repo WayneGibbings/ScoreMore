@@ -117,11 +117,18 @@ export function App() {
   useEffect(() => {
     async function loadState() {
       const savedGameState = await loadCurrentGameState();
-      if (savedGameState) {
-        setTeams(savedGameState.teams);
+      if (savedGameState && savedGameState.teams) {
+        // Make sure the teams array has players array defined
+        const teamsWithPlayers = savedGameState.teams.map(team => ({
+          ...team,
+          // Ensure players is always an array, even if it's null or undefined in the saved state
+          players: Array.isArray(team.players) ? team.players : [],
+        }));
+
+        setTeams(teamsWithPlayers);
         setGameActive(savedGameState.gameActive);
         setIsHalftime(savedGameState.isHalftime);
-        setCurrentHalf(savedGameState.currentHalf || 1); // Renamed from currentInning
+        setCurrentHalf(savedGameState.currentHalf || 1);
         setGameStatus(savedGameState.gameStatus || 'initial');
       } else {
         // If no saved game state, ensure default teams are part of what we might save initially.
@@ -130,7 +137,7 @@ export function App() {
           teams, // Use initial teams from useState
           gameActive: false,
           isHalftime: false,
-          currentHalf: 1, // Renamed from currentInning
+          currentHalf: 1,
           gameStatus: 'initial',
         };
         await saveCurrentGameState(initialGameState);
