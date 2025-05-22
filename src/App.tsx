@@ -5,7 +5,7 @@ import { ScoreBoard } from './components/ScoreBoard';
 import { GameHistory } from './components/GameHistory';
 import { ScoringLog } from './components/ScoringLog';
 import { InfoPage } from './components/InfoPage';
-import { AboutPage, PrivacyPolicy, TermsOfService } from './components/legal';
+import { AboutPage, PrivacyPolicy } from './components/legal';
 import { StorageConsentBanner } from './components/StorageConsentBanner';
 import { Mail, Info } from 'lucide-react'; // Import only icons we're using
 import {
@@ -98,7 +98,6 @@ export function App() {
 
   // States for legal pages
   const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
-  const [isTermsOfServiceOpen, setIsTermsOfServiceOpen] = useState(false);
   const [isAboutPageOpen, setIsAboutPageOpen] = useState(false);
 
   // Removed unused variable appVersionFromEnv
@@ -550,10 +549,6 @@ export function App() {
       {/* Legal and info modals */}
       <InfoPage isOpen={isInfoPageOpen} onClose={() => setIsInfoPageOpen(false)} />
       <PrivacyPolicy isOpen={isPrivacyPolicyOpen} onClose={() => setIsPrivacyPolicyOpen(false)} />
-      <TermsOfService
-        isOpen={isTermsOfServiceOpen}
-        onClose={() => setIsTermsOfServiceOpen(false)}
-      />
       <AboutPage isOpen={isAboutPageOpen} onClose={() => setIsAboutPageOpen(false)} />
 
       {/* Local storage consent banner */}
@@ -646,12 +641,6 @@ export function App() {
               className="text-blue-600 hover:underline"
             >
               Privacy Policy
-            </button>
-            <button
-              onClick={() => setIsTermsOfServiceOpen(true)}
-              className="text-blue-600 hover:underline"
-            >
-              Terms of Service
             </button>
           </div>
 

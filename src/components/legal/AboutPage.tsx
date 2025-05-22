@@ -29,12 +29,9 @@ export const AboutPage: React.FC<AboutPageProps> = ({ isOpen, onClose }) => {
           </section>
 
           <section>
-            <h3 className="text-lg font-semibold mb-2">Our Mission</h3>
             <p className="mb-4">
-              HockeyScorer was created to provide field hockey teams, coaches, and enthusiasts with
-              a simple yet powerful tool to track scores, player performance, and game history. Our
-              goal is to enhance the field hockey experience by offering an intuitive scoring
-              solution that works across all devices.
+              HockeyScorer was created because I couldn't find anything simple and free to score my
+              daughter's hockey games.
             </p>
           </section>
 
@@ -81,20 +78,13 @@ export const AboutPage: React.FC<AboutPageProps> = ({ isOpen, onClose }) => {
           <section>
             <h3 className="text-lg font-semibold mb-2">Contact Us</h3>
             <p className="mb-4">
-              We're always looking to improve HockeyScorer and welcome your feedback. If you have
+              I'm always looking to improve HockeyScorer and welcome your feedback. If you have
               suggestions, questions, or concerns, please reach out:
             </p>
             <p>
               <a href="mailto:feedback@hockeyscorer.app" className="text-blue-600 hover:underline">
                 feedback@hockeyscorer.app
               </a>
-            </p>
-          </section>
-
-          <section>
-            <h3 className="text-lg font-semibold mb-2">Version</h3>
-            <p>
-              Current version: <span className="font-mono">1.0.0</span>
             </p>
           </section>
         </div>
