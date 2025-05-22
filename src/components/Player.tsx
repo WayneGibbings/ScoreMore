@@ -67,10 +67,14 @@ export const Player: React.FC<PlayerProps> = ({
           <button
             onClick={() => onUpdateScore(1)}
             disabled={!gameActive}
-            className="px-3 h-8 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-full disabled:opacity-50 disabled:bg-gray-500"
+            className="px-3 h-8 flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white rounded-full disabled:opacity-80 disabled:bg-gray-600"
             title={gameActive ? 'Add goal' : 'Game must be active to score'}
           >
-            <span role="img" aria-label="Add goal" className="flex items-center space-x-1 text-lg">
+            <span
+              role="img"
+              aria-label="Add goal"
+              className="flex items-center space-x-1 text-lg opacity-100"
+            >
               <span>🏑</span>
               <span>🥅</span>
             </span>
