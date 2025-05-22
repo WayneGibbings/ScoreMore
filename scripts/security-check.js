@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Pre-commit security check script for ScoreMore
+ * Pre-commit security check script for HockeyScorer
  * This script checks for common security issues in the codebase
  */
 
