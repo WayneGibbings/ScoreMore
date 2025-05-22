@@ -154,29 +154,6 @@ export function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array means this runs once on mount
 
-  // Ensure all players have active property (for backward compatibility)
-  useEffect(() => {
-    if (isLoading) return; // Don't process while loading
-
-    // Check if any player is missing the active property
-    const needsUpdate = teams.some(team =>
-      team.players.some(player => player.active === undefined)
-    );
-
-    if (needsUpdate) {
-      // Update all players to have active=true by default
-      const updatedTeams = teams.map(team => ({
-        ...team,
-        players: team.players.map(player => ({
-          ...player,
-          active: player.active !== undefined ? player.active : true,
-        })),
-      }));
-
-      setTeams(updatedTeams);
-    }
-  }, [teams, isLoading]);
-
   // Save game state to DB whenever it changes
   useEffect(() => {
     if (isLoading) return; // Don't save while initially loading
@@ -200,7 +177,11 @@ export function App() {
         totalScore,
       };
     });
-    setTeams(updatedTeams);
+    // Only update if totalScore actually changed
+    const changed = updatedTeams.some((t, i) => t.totalScore !== teams[i].totalScore);
+    if (changed) {
+      setTeams(updatedTeams);
+    }
   }, [teams]); // Simplified dependency - will update when teams change
 
   const startGame = async () => {
