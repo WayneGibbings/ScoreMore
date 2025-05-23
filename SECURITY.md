@@ -1,6 +1,6 @@
-# Security Guidelines for ScoreMore Project
+# Security Guidelines for HockeyScorer Project
 
-This document outlines security practices to follow when developing for the ScoreMore project.
+This document outlines security practices to follow when developing for the HockeyScorer project.
 
 ## Pre-commit Security Checks
 
