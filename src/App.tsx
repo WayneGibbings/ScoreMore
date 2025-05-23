@@ -336,6 +336,11 @@ export function App() {
     const newHalftimeState = !isHalftime;
     setIsHalftime(newHalftimeState);
 
+    // When transitioning from halftime to second half, increment the currentHalf
+    if (isHalftime && !newHalftimeState) {
+      setCurrentHalf(2); // Transition to second half
+    }
+
     // Create a more descriptive log entry that shows whether we're entering or exiting halftime
     const logEntry: LogEntry = {
       id: Date.now().toString(),
