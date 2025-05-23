@@ -32,6 +32,14 @@ async function getDb(): Promise<Database> {
 async function saveDb(currentDb: Database) {
   const binaryArray = currentDb.export();
   localStorage.setItem('sqliteDb', Array.from(binaryArray).toString());
+
+  // Create a promise that resolves after a small delay to ensure write completes
+  // This helps prevent race conditions when refreshing the page immediately after state changes
+  return new Promise<void>(resolve => {
+    setTimeout(() => {
+      resolve();
+    }, 10); // Small delay to ensure persistence completes
+  });
 }
 
 // Schema initialization, only call this if db is new
@@ -83,19 +91,30 @@ export interface CurrentGameState {
 
 export async function saveCurrentGameState(state: CurrentGameState) {
   const currentDb = await getDb();
-  const { teams, gameActive, isHalftime, currentHalf, gameStatus } = state; // Renamed from currentInning
+  const { teams, gameActive, isHalftime, currentHalf, gameStatus } = state;
+
+  // Ensure data consistency: if we're in the second half (not halftime and currentHalf > 1),
+  // make sure we're explicitly setting currentHalf to 2 to avoid any state inconsistencies
+  let halfToSave = currentHalf;
+  if (gameActive && !isHalftime && currentHalf > 1) {
+    halfToSave = 2; // Force to exactly 2 for second half
+  }
+
   currentDb.run(
     `INSERT OR REPLACE INTO current_game_state (id, teams_json, game_active, is_halftime, current_half, game_status, timestamp)
-     VALUES (1, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`, // Renamed from current_inning
+     VALUES (1, ?, ?, ?, ?, ?, datetime('now', 'localtime'))`,
     [
       JSON.stringify(teams),
       gameActive ? 1 : 0,
       isHalftime ? 1 : 0,
-      currentHalf, // Renamed from currentInning
+      halfToSave, // Use the validated half value
       gameStatus,
     ]
   );
-  await saveDb(currentDb);
+
+  // Wait for the save operation to complete with a small delay
+  // This helps prevent race conditions during refreshes
+  return await saveDb(currentDb);
 }
 
 export async function loadCurrentGameState(): Promise<CurrentGameState | null> {
@@ -133,15 +152,39 @@ export async function loadCurrentGameState(): Promise<CurrentGameState | null> {
     } catch (error) {
       console.error('Failed to parse teams_json from current_game_state:', error);
       parsedTeams = [];
+    } // Extract values from database row
+    let currentHalfFromDb = row.current_half as number;
+    if (currentHalfFromDb === null || currentHalfFromDb === undefined) {
+      currentHalfFromDb = 1;
     }
+
+    // Handle boolean conversion explicitly to avoid potential issues
+    const isActive = row.game_active === 1;
+    const isHalftimeFromDb = row.is_halftime === 1;
+
+    // Important: Make sure halftime and currentHalf are consistent with each other
+    // If we're in the second half (currentHalf > 1), we CANNOT be at halftime
+    let finalIsHalftime = isHalftimeFromDb;
+    const finalCurrentHalf = currentHalfFromDb;
+
+    // Special case: If currentHalf is 2, we must not be at halftime
+    if (finalCurrentHalf > 1) {
+      finalIsHalftime = false;
+    }
+
+    // Log the values we're loading for debugging
+    console.log('Loading game state:', {
+      raw_is_halftime: row.is_halftime,
+      raw_current_half: row.current_half,
+      isHalftime: finalIsHalftime,
+      currentHalf: finalCurrentHalf,
+    });
+
     result = {
       teams: parsedTeams,
-      gameActive: !!row.game_active,
-      isHalftime: !!row.is_halftime,
-      currentHalf:
-        (row.current_half as number) === null || (row.current_half as number) === undefined
-          ? 1
-          : (row.current_half as number), // Renamed from current_inning
+      gameActive: isActive,
+      isHalftime: finalIsHalftime,
+      currentHalf: finalCurrentHalf,
       gameStatus: (row.game_status as string) || 'initial',
     };
   }

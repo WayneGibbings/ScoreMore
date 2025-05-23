@@ -109,11 +109,49 @@ export function App() {
           players: Array.isArray(team.players) ? team.players : [],
         }));
 
+        // Extract state values ensuring they are consistent
+        const { gameActive, isHalftime, currentHalf, gameStatus } = savedGameState;
+
+        // Ensure state consistency with robust rules:
+        // 1. If currentHalf > 1, we must be in second half (not halftime)
+        // 2. Default currentHalf to 1 if not specified
+        // 3. Use appropriate game status based on these values
+
+        // Apply the rules
+        const finalCurrentHalf = currentHalf || 1;
+        const finalIsHalftime = finalCurrentHalf > 1 ? false : isHalftime;
+
+        // Set appropriate game status
+        let adjustedGameStatus = gameStatus || 'initial';
+
+        // Ensure game status is consistent with halftime state and current half
+        if (gameActive) {
+          if (finalCurrentHalf > 1) {
+            // We're in second half
+            adjustedGameStatus = 'second_half';
+          } else if (finalIsHalftime) {
+            // We're in halftime
+            adjustedGameStatus = 'halftime';
+          } else {
+            // We're in first half
+            adjustedGameStatus = 'in_progress';
+          }
+        }
+
+        // console.log('App loading state with consistency check:', {
+        //   rawCurrentHalf: currentHalf,
+        //   rawIsHalftime: isHalftime,
+        //   finalCurrentHalf,
+        //   finalIsHalftime,
+        //   finalGameStatus: adjustedGameStatus
+        // });
+
+        // Update all state variables in one batch to avoid interim inconsistent states
         setTeams(teamsWithPlayers);
-        setGameActive(savedGameState.gameActive);
-        setIsHalftime(savedGameState.isHalftime);
-        setCurrentHalf(savedGameState.currentHalf || 1);
-        setGameStatus(savedGameState.gameStatus || 'initial');
+        setGameActive(gameActive);
+        setIsHalftime(finalIsHalftime); // Use the checked value to ensure consistency
+        setCurrentHalf(finalCurrentHalf);
+        setGameStatus(adjustedGameStatus);
       } else {
         // If no saved game state, ensure default teams are part of what we might save initially.
         // This helps if saveCurrentGameState is called before any user interaction.
@@ -142,13 +180,25 @@ export function App() {
   useEffect(() => {
     if (isLoading) return; // Don't save while initially loading
 
+    // Perform additional validation to ensure consistent state before saving
+    const validatedHalftime = currentHalf > 1 ? false : isHalftime;
+    const validatedGameStatus = !gameActive
+      ? 'initial'
+      : validatedHalftime
+        ? 'halftime'
+        : currentHalf > 1
+          ? 'second_half'
+          : 'in_progress';
+
     const gameState: CurrentGameState = {
       teams,
       gameActive,
-      isHalftime,
+      isHalftime: validatedHalftime, // Ensure this is always consistent with currentHalf
       currentHalf, // Renamed from currentInning
-      gameStatus,
+      gameStatus: validatedGameStatus,
     };
+    // Removed debug logging
+
     saveCurrentGameState(gameState);
   }, [teams, gameActive, isHalftime, currentHalf, gameStatus, isLoading]); // Renamed from currentInning
 
@@ -334,11 +384,54 @@ export function App() {
   };
   const toggleHalftime = async () => {
     const newHalftimeState = !isHalftime;
-    setIsHalftime(newHalftimeState);
 
-    // When transitioning from halftime to second half, increment the currentHalf
-    if (isHalftime && !newHalftimeState) {
-      setCurrentHalf(2); // Transition to second half
+    try {
+      if (isHalftime && !newHalftimeState) {
+        // Exiting halftime - going to second half
+        // Removed debug logging
+
+        // Create a local state object to ensure consistency
+        const secondHalfState = {
+          teams,
+          gameActive: true,
+          isHalftime: false,
+          currentHalf: 2,
+          gameStatus: 'second_half', // Use a more specific game status for second half
+        };
+
+        // Save to database FIRST to ensure it's persisted
+        await saveCurrentGameState(secondHalfState);
+
+        // Then update local state
+        setCurrentHalf(2);
+        setIsHalftime(false);
+        setGameStatus('second_half'); // Use consistent game status with the saved state
+
+        // Removed debug logging
+      } else {
+        // Entering halftime
+        // Removed debug logging
+
+        // Create a local state object to ensure consistency
+        const halftimeState = {
+          teams,
+          gameActive: true,
+          isHalftime: true,
+          currentHalf: 1, // Explicitly keep as 1 during halftime
+          gameStatus: 'halftime',
+        };
+
+        // Save to database first
+        await saveCurrentGameState(halftimeState);
+
+        // Then update local state
+        setIsHalftime(true);
+        setGameStatus('halftime');
+
+        // Removed debug logging
+      }
+    } catch (error) {
+      console.error('Error toggling halftime state:', error);
     }
 
     // Create a more descriptive log entry that shows whether we're entering or exiting halftime
@@ -354,7 +447,6 @@ export function App() {
 
     await addLogEntryToDb(logEntry);
     setScoringLog(prevLog => [logEntry, ...prevLog]);
-    setGameStatus(newHalftimeState ? 'halftime' : 'in_progress');
   };
 
   const handleDeleteGame = async (gameId: string) => {
@@ -558,6 +650,7 @@ export function App() {
           isHalftime={isHalftime}
           onHalftime={toggleHalftime}
           disableStart={teams.some(team => team.players.length === 0)}
+          currentHalf={currentHalf}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {' '}
