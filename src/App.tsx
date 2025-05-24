@@ -9,18 +9,22 @@ import { AboutPage, PrivacyPolicy } from './components/legal';
 import { StorageConsentBanner } from './components/StorageConsentBanner';
 import { Mail, Info } from 'lucide-react'; // Import only icons we're using
 import { formatDateYYYYMMDD, formatDateTimeYYYYMMDDHHMMSS } from './utils/dateFormat';
+import { copyToClipboard } from './utils/clipboard'; // Import clipboard utility
+import { formatGameSummary } from './utils/gameSummary'; // Import game summary formatter
+import { Toast } from './utils/toast'; // Import Toast interface
 import {
   loadCurrentGameState,
   saveCurrentGameState,
   loadGameHistory,
   saveCompletedGame,
+  updateCompletedGame,
   addLogEntryToDb,
   loadScoringLogForCurrentGame,
+  loadScoringLogForGame,
   associateScoreLogToGameHistory,
   clearUnassociatedScoreLog,
   deleteGameFromHistory,
-  updateCompletedGame,
-  type CurrentGameState, // Import the interface
+  type CurrentGameState,
 } from './db';
 
 export type Player = {
@@ -79,6 +83,7 @@ export function App() {
   const [gameStatus, setGameStatus] = useState('initial'); // Added for db state
   const [isLoading, setIsLoading] = useState(true); // To prevent rendering until DB is loaded
   const [isInfoPageOpen, setIsInfoPageOpen] = useState(false); // State for info page modal
+  const [toastState, setToastState] = useState<Toast>({ message: '', visible: false }); // State for toast notifications
 
   // States for legal pages
   const [isPrivacyPolicyOpen, setIsPrivacyPolicyOpen] = useState(false);
@@ -605,6 +610,72 @@ export function App() {
     );
   };
 
+  // Function to copy the most recent game summary to clipboard
+  const copyGameSummary = async () => {
+    if (gameHistory.length === 0) return;
+
+    const mostRecentGame = gameHistory[0]; // The most recent game is at index 0
+
+    // Load notes for the game
+    const notes = await loadScoringLogForGame(mostRecentGame.id);
+    const notesObj = { [mostRecentGame.id]: notes };
+
+    // Generate game summary
+    const summary = formatGameSummary(mostRecentGame, notesObj);
+
+    // Try to copy to clipboard
+    const success = await copyToClipboard(summary);
+
+    if (success) {
+      // Show success toast
+      setToastState({
+        message: 'Game summary copied to clipboard!',
+        visible: true,
+        type: 'success',
+      });
+    } else {
+      // If clipboard API fails, show manual copy fallback
+      // For simplicity, we'll just show an error toast here
+      setToastState({
+        message: 'Could not copy to clipboard. Please try again.',
+        visible: true,
+        type: 'error',
+      });
+    }
+
+    // Hide toast after 3 seconds
+    setTimeout(() => {
+      setToastState({ message: '', visible: false });
+    }, 3000);
+  };
+
+  // Function to reset game after it has ended
+  const resetGame = async () => {
+    // Reset scores but keep players
+    const resetTeams = teams.map(team => ({
+      ...team,
+      players: team.players.map(player => ({
+        ...player,
+        score: 0,
+      })),
+      totalScore: 0,
+    }));
+
+    setTeams(resetTeams);
+    // Change game status to initial state, ready to start a new game
+    setGameStatus('initial');
+    setScoringLog([]);
+
+    // Save the reset state to the database
+    await saveCurrentGameState({
+      teams: resetTeams,
+      gameActive: false,
+      isHalftime: false,
+      currentHalf: 1,
+      gameStatus: 'initial',
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 p-4 flex justify-center items-center">
@@ -647,10 +718,13 @@ export function App() {
           gameActive={gameActive}
           startGame={startGame}
           endGame={endGame}
+          resetGame={resetGame}
           isHalftime={isHalftime}
           onHalftime={toggleHalftime}
           disableStart={teams.some(team => team.players.length === 0)}
           currentHalf={currentHalf}
+          gameStatus={gameStatus}
+          copyGameSummary={copyGameSummary}
         />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           {' '}
@@ -717,6 +791,71 @@ export function App() {
           <p className="mt-2">© {new Date().getFullYear()} hockeyscorer.app</p>
         </footer>
       </div>
+
+      {/* Toast Notification */}
+      {toastState.visible && (
+        <div
+          className={`fixed bottom-5 right-5 px-6 py-3 rounded-md shadow-lg z-50 flex items-center ${
+            toastState.type === 'error'
+              ? 'bg-red-600 text-white'
+              : toastState.type === 'success'
+                ? 'bg-green-600 text-white'
+                : 'bg-blue-600 text-white'
+          }`}
+        >
+          {toastState.type === 'error' ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+          ) : toastState.type === 'success' ? (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2"
+            >
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path>
+            </svg>
+          ) : (
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mr-2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          )}
+          {toastState.message}
+        </div>
+      )}
     </div>
   );
 }

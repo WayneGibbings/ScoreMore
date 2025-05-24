@@ -239,8 +239,17 @@ export const GameHistory: React.FC<GameHistoryProps> = ({ history, onDeleteGame,
   const copyGameToClipboard = async (e: React.MouseEvent, game: GameResult) => {
     e.stopPropagation(); // Prevent triggering the parent onClick
 
-    // Generate game summary using the utility function
-    const summary = formatGameSummary(game, gameNotes);
+    // Always load fresh notes for this game to ensure we have the latest data
+    const notes = await loadScoringLogForGame(game.id);
+
+    // Update the gameNotes state for future reference
+    setGameNotes(prev => ({
+      ...prev,
+      [game.id]: notes,
+    }));
+
+    // Generate game summary using the utility function with the notes we just loaded
+    const summary = formatGameSummary(game, { [game.id]: notes });
 
     // Try to copy to clipboard using utility function
     const success = await copyToClipboard(summary);
